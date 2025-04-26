@@ -7,7 +7,7 @@ Bienvenidos a **semillero_api**, un proyecto creado con **Laravel** y **PHP** si
 
 1. **Clonar el repositorio:**
    ```bash
-   git clone https://github.com/your_user/semillero_api.git
+   git clone https://github.com/Yhiriend/semillero_api.git
    cd semillero_api
    ```
 
