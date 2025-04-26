@@ -361,3 +361,92 @@ Esta sección describe la asignación de tareas para el desarrollo de los módul
    - Todas las funciones del sistema, excepto la gestión de evaluaciones.
 
 
+---
+# 🚀 Guía para colaboradores
+
+## 1. Clonar el repositorio
+```bash
+git clone https://github.com/Yhiriend/semillero_api.git
+```
+
+## 2. Crear una nueva rama para tu tarea
+**Siempre crea una rama nueva basada en `main`**
+
+```bash
+git checkout main
+git pull origin main
+git checkout -b nombre_de_tu_rama
+```
+
+⚫️ **Importante:** Usa nombres de rama en inglés, en formato `kebab-case`, por ejemplo:
+- `feature/create-user`
+- `bugfix/fix-login-error`
+- `hotfix/update-event-model`
+
+## 3. Realizar cambios en tu rama
+Haz los cambios necesarios siguiendo las reglas de codificación del proyecto (camelCase, nombres claros, principios SOLID, etc.).
+
+## 4. Hacer commits siguiendo la estructura establecida
+Cada commit debe seguir este formato:
+
+```
+:gitmoji: NOMBRE_RAMA: Mensaje claro del commit
+```
+
+⚫️ **Ejemplo:**
+
+```
+✨ feature/create-user: add controller and service for user registration
+```
+
+(Usar GITMOJI al inicio ayuda a identificar el tipo de cambio, por ejemplo: ✨ para nueva funcionalidad, 🐛 para correcciones, 🔥 para eliminar código, etc.)
+
+## 5. Subir tus cambios
+```bash
+git add .
+git commit -m ":gitmoji: NOMBRE_RAMA: Mensaje claro del commit"
+git push origin nombre_de_tu_rama
+```
+
+## 6. Crear un Pull Request
+- Ve al repositorio en GitHub.
+- Haz clic en **"Compare & Pull Request"**.
+- Selecciona que quieres hacer el Pull Request hacia la rama `main`.
+- Escribe un mensaje claro describiendo qué hiciste.
+
+⚫️ **Nota:**  
+Tu Pull Request **debe ser aprobado** antes de ser fusionado a la rama principal.  
+No está permitido hacer "merge" directo.
+
+## 7. Corregir cambios solicitados
+Si el revisor solicita cambios, realiza los cambios en tu misma rama y sube los nuevos commits.  
+Automáticamente se actualizará el Pull Request.
+
+## 8. No hacer push directo a ramas protegidas
+Ramas como `main` y `qa` están protegidas.  
+**Está prohibido** hacer `push` directo, **siempre** debe pasar por un Pull Request.
+
+# ✅ Resumen Rápido
+- Siempre trabajar en una nueva rama.
+- Siempre seguir el formato de commits.
+- Siempre hacer Pull Request para mergear cambios.
+- Código limpio, claro y probado localmente antes de enviar.
+
+# 🖊️ Tabla de GITMOJIS comunes
+
+| Gitmoji | Descripción | Cuándo usarlo |
+|:------:|:-----------|:--------------|
+|✨| Nueva funcionalidad | Cuando agregas nuevas funcionalidades |
+|🐛| Corrección de bug | Cuando solucionas errores o fallos |
+|🔄| Refactorización | Cuando mejoras código sin cambiar funcionalidad |
+|🔍| Mejoras de performance | Optimizaciones de rendimiento |
+|💾| Actualización de archivos | Cambios en archivos de configuración o datos |
+|💡| Documentación | Cambios en README.md u otra documentación |
+|🔥| Eliminación de código | Eliminación de código o archivos innecesarios |
+|🔒| Seguridad | Cambios relacionados con la seguridad |
+|🌐| Deploy/Producción | Cambios para deployar a ambiente de producción |
+
+---
+
+# 🚀 ¡A trabajar en equipo con calidad y orden! 🚀
+
