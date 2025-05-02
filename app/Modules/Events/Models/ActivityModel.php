@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class ActivityModel extends Model
 {
-    protected $table = 'Actividad';
+    protected $table = 'actividad';
     protected $primaryKey = 'id';
     protected $fillable = [
         'titulo',
