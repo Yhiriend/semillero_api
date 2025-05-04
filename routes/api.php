@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Modules\Authentication\Controllers\AuthController;
 use App\Modules\Reports\Controllers\ReportController;
+use App\Modules\Reports\Controllers\EvaluatorController;
+use App\Modules\Events\Controllers\EventController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -16,6 +18,10 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::middleware('auth:api')->group(function () {
-    Route::get('reports/projects-with-authors', [ReportController::class, 'getProjectsWithAuthors']);
-    Route::post('reports/generate-certificate', [ReportController::class, 'generateCertificate']);
+    Route::prefix('reports')->group(function () {
+        Route::get('projects-with-authors', [ReportController::class, 'getProjectsWithAuthors']);
+        Route::post('generate-certificate', [ReportController::class, 'generateCertificate']);
+        Route::get('evaluators', [EvaluatorController::class, 'index']);
+        Route::get('events/{eventId}/registered-users', [EventController::class, 'getRegisteredUsers']);
+    });
 });
