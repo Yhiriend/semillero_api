@@ -15,6 +15,429 @@
         }
     ],
     "paths": {
+        "/api/events/{eventId}/activities": {
+            "get": {
+                "tags": [
+                    "Activities"
+                ],
+                "summary": "Get all activities for an event",
+                "operationId": "b415fe0fc8355618241977ff96c0f984",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "ID of the event",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of activities",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Listado de actividades obtenido correctamente"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ActivityResource"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Activities"
+                ],
+                "summary": "Create a new activity",
+                "operationId": "ed1b0b5d3f114b4ce85327802c8c1584",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "ID of the event",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreActivityRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Activity created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Actividad creada exitosamente"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/ActivityResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/events/{eventId}/activities/{activityId}": {
+            "get": {
+                "tags": [
+                    "Activities"
+                ],
+                "summary": "Get activity details",
+                "operationId": "ece68efba4b7a1a4058e397d418df745",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "ID of the event",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "activityId",
+                        "in": "path",
+                        "description": "ID of the activity",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Activity details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Actividad encontrada"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/ActivityResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Activity not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Activities"
+                ],
+                "summary": "Update an activity",
+                "operationId": "33a166e0454d8c603a4d0d5f73be6a5e",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "ID of the event",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "activityId",
+                        "in": "path",
+                        "description": "ID of the activity",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateActivityRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Activity updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Actividad actualizada correctamente"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/ActivityResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Activity not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Activities"
+                ],
+                "summary": "Delete an activity",
+                "operationId": "1abc6be12be265791ffbb3fedd1239e7",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "ID of the event",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "activityId",
+                        "in": "path",
+                        "description": "ID of the activity",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Activity deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Actividad eliminada correctamente"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Activity not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/events/{eventId}/activities/{activityId}/assign-responsables": {
+            "post": {
+                "tags": [
+                    "Activities"
+                ],
+                "summary": "Assign responsables to activity",
+                "operationId": "f17d13f5d53c7907cbd8c1b86fa5e3a6",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "ID of the event",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "activityId",
+                        "in": "path",
+                        "description": "ID of the activity",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AssignResponsablesRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Responsables assigned successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Responsables asignados correctamente"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/ActivityResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Activity not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/auth/register": {
             "post": {
                 "tags": [
@@ -337,9 +760,989 @@
                     }
                 ]
             }
+        },
+        "/api/events": {
+            "get": {
+                "tags": [
+                    "Eventos"
+                ],
+                "summary": "Obtener listado de eventos",
+                "operationId": "40112137de5252277c30d88f9b8149b0",
+                "parameters": [
+                    {
+                        "name": "fecha_inicio",
+                        "in": "query",
+                        "description": "Fecha de inicio para filtrar eventos",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "fecha_fin",
+                        "in": "query",
+                        "description": "Fecha de fin para filtrar eventos",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "coordinador_nombre",
+                        "in": "query",
+                        "description": "Nombre del coordinador para filtrar eventos",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado de eventos obtenido correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Listado de eventos obtenido correctamente"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/EventResource"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error del servidor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Eventos"
+                ],
+                "summary": "Crear un nuevo evento",
+                "operationId": "6c217647c212deef37a617ac16d3a066",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreEventRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Evento creado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Evento creado exitosamente"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/EventResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error del servidor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/events/{id}": {
+            "get": {
+                "tags": [
+                    "Eventos"
+                ],
+                "summary": "Obtener un evento específico",
+                "operationId": "450f9f67430128c743509c54ca61d46c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del evento",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Evento encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Evento encontrado"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/EventResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Evento no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error del servidor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Eventos"
+                ],
+                "summary": "Actualizar un evento existente",
+                "operationId": "1c5f708900ed71f683dc3148d9d876a2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del evento a actualizar",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateEventRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Evento actualizado correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Evento actualizado correctamente"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/EventResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Evento no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error del servidor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Eventos"
+                ],
+                "summary": "Eliminar un evento",
+                "operationId": "97408f5e15b53746fa626dab5334821e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del evento a eliminar",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Evento eliminado correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Evento eliminado correctamente"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Evento no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error del servidor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/events/{event}/projects": {
+            "get": {
+                "tags": [
+                    "Event Projects"
+                ],
+                "summary": "Get all projects for an event",
+                "operationId": "019c55c4bb650b5e0a236d7e82902adf",
+                "parameters": [
+                    {
+                        "name": "event",
+                        "in": "path",
+                        "description": "ID of the event",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of event projects",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Proyectos del evento obtenidos correctamente"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ProjectEventResource"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Event Projects"
+                ],
+                "summary": "Add a project to an event",
+                "operationId": "226b404d90605091107e67aca5c691ff",
+                "parameters": [
+                    {
+                        "name": "event",
+                        "in": "path",
+                        "description": "ID of the event",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProjectEventRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Project added to event successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Proyecto asociado al evento exitosamente"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/ProjectEventResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/events/{event}/projects/{project}": {
+            "get": {
+                "tags": [
+                    "Event Projects"
+                ],
+                "summary": "Get project-event relationship details",
+                "operationId": "cde39b1b1f3021d7a2058cf6e15a0f22",
+                "parameters": [
+                    {
+                        "name": "event",
+                        "in": "path",
+                        "description": "ID of the event",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "project",
+                        "in": "path",
+                        "description": "ID of the project",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Project-event relationship details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Relación evento-proyecto obtenida"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/ProjectEventResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Relationship not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Event Projects"
+                ],
+                "summary": "Remove a project from an event",
+                "operationId": "7eb32eb477b0e6639832beb1e24d108c",
+                "parameters": [
+                    {
+                        "name": "event",
+                        "in": "path",
+                        "description": "ID of the event",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "project",
+                        "in": "path",
+                        "description": "ID of the project",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Project removed from event successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Proyecto desvinculado del evento correctamente"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Relationship not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
+        "schemas": {
+            "ActivityResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "location": {
+                        "type": "string"
+                    },
+                    "event_id": {
+                        "type": "integer"
+                    },
+                    "responsables": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "id": {
+                                    "type": "integer"
+                                },
+                                "name": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "StoreActivityRequest": {
+                "required": [
+                    "name",
+                    "start_date",
+                    "end_date"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "location": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateActivityRequest": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "location": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "AssignResponsablesRequest": {
+                "required": [
+                    "responsables"
+                ],
+                "properties": {
+                    "responsables": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "ErrorResponse": {
+                "properties": {
+                    "status": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Error message"
+                    }
+                },
+                "type": "object"
+            },
+            "ValidationErrorResponse": {
+                "properties": {
+                    "status": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Validation Error"
+                    },
+                    "errors": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "EventResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "location": {
+                        "type": "string"
+                    },
+                    "coordinador_id": {
+                        "type": "integer"
+                    },
+                    "coordinador": {
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "StoreEventRequest": {
+                "required": [
+                    "name",
+                    "start_date",
+                    "end_date"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "location": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "nullable": true
+                    },
+                    "coordinador_id": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateEventRequest": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "location": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "nullable": true
+                    },
+                    "coordinador_id": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "ProjectEventResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "event_id": {
+                        "type": "integer"
+                    },
+                    "proyecto_id": {
+                        "type": "integer"
+                    },
+                    "proyecto": {
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "nombre": {
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "evento": {
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "nombre": {
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "ProjectEventRequest": {
+                "required": [
+                    "proyecto_id"
+                ],
+                "properties": {
+                    "proyecto_id": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            }
+        },
         "securitySchemes": {
             "bearerAuth": {
                 "type": "http",
@@ -350,8 +1753,20 @@
     },
     "tags": [
         {
+            "name": "Activities",
+            "description": "Endpoints for managing event activities"
+        },
+        {
             "name": "Autenticación",
             "description": "Endpoints para la autenticación de usuarios"
+        },
+        {
+            "name": "Eventos",
+            "description": "Eventos"
+        },
+        {
+            "name": "Event Projects",
+            "description": "Event Projects"
         }
     ]
 }

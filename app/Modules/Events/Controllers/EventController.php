@@ -12,6 +12,46 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Traits\ApiResponse;
 
+/**
+ * @OA\Schema(
+ *     schema="EventResource",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer"),
+ *     @OA\Property(property="name", type="string"),
+ *     @OA\Property(property="description", type="string"),
+ *     @OA\Property(property="start_date", type="string", format="date-time"),
+ *     @OA\Property(property="end_date", type="string", format="date-time"),
+ *     @OA\Property(property="location", type="string"),
+ *     @OA\Property(property="coordinador_id", type="integer"),
+ *     @OA\Property(
+ *         property="coordinador",
+ *         type="object",
+ *         @OA\Property(property="id", type="integer"),
+ *         @OA\Property(property="name", type="string")
+ *     )
+ * )
+ * 
+ * @OA\Schema(
+ *     schema="StoreEventRequest",
+ *     required={"name", "start_date", "end_date"},
+ *     @OA\Property(property="name", type="string", maxLength=255),
+ *     @OA\Property(property="description", type="string", nullable=true),
+ *     @OA\Property(property="start_date", type="string", format="date-time"),
+ *     @OA\Property(property="end_date", type="string", format="date-time"),
+ *     @OA\Property(property="location", type="string", maxLength=255, nullable=true),
+ *     @OA\Property(property="coordinador_id", type="integer")
+ * )
+ * 
+ * @OA\Schema(
+ *     schema="UpdateEventRequest",
+ *     @OA\Property(property="name", type="string", maxLength=255),
+ *     @OA\Property(property="description", type="string", nullable=true),
+ *     @OA\Property(property="start_date", type="string", format="date-time"),
+ *     @OA\Property(property="end_date", type="string", format="date-time"),
+ *     @OA\Property(property="location", type="string", maxLength=255, nullable=true),
+ *     @OA\Property(property="coordinador_id", type="integer")
+ * )
+ */
 class EventController extends Controller
 {
     use ApiResponse;
@@ -21,6 +61,53 @@ class EventController extends Controller
     ) {
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/events",
+     *     tags={"Eventos"},
+     *     summary="Obtener listado de eventos",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="fecha_inicio",
+     *         in="query",
+     *         description="Fecha de inicio para filtrar eventos",
+     *         required=false,
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="fecha_fin",
+     *         in="query",
+     *         description="Fecha de fin para filtrar eventos",
+     *         required=false,
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="coordinador_nombre",
+     *         in="query",
+     *         description="Nombre del coordinador para filtrar eventos",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Listado de eventos obtenido correctamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Listado de eventos obtenido correctamente"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(ref="#/components/schemas/EventResource")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error del servidor",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     )
+     * )
+     */
     public function index(ListEventsRequest $request): JsonResponse
     {
         try {
@@ -37,6 +124,40 @@ class EventController extends Controller
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/events",
+     *     tags={"Eventos"},
+     *     summary="Crear un nuevo evento",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/StoreEventRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Evento creado exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Evento creado exitosamente"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 ref="#/components/schemas/EventResource"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Error de validación",
+     *         @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error del servidor",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     )
+     * )
+     */
     public function store(StoreEventRequest $request): JsonResponse
     {
         try {
@@ -54,6 +175,43 @@ class EventController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/events/{id}",
+     *     tags={"Eventos"},
+     *     summary="Obtener un evento específico",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID del evento",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Evento encontrado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Evento encontrado"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 ref="#/components/schemas/EventResource"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Evento no encontrado",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error del servidor",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     )
+     * )
+     */
     public function show($id): JsonResponse
     {
         try {
@@ -75,6 +233,52 @@ class EventController extends Controller
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/events/{id}",
+     *     tags={"Eventos"},
+     *     summary="Actualizar un evento existente",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID del evento a actualizar",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/UpdateEventRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Evento actualizado correctamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Evento actualizado correctamente"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 ref="#/components/schemas/EventResource"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Evento no encontrado",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Error de validación",
+     *         @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error del servidor",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     )
+     * )
+     */
     public function update(UpdateEventRequest $request, $id): JsonResponse
     {
         try {
@@ -96,6 +300,40 @@ class EventController extends Controller
         }
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/api/events/{id}",
+     *     tags={"Eventos"},
+     *     summary="Eliminar un evento",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID del evento a eliminar",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=204,
+     *         description="Evento eliminado correctamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Evento eliminado correctamente"),
+     *             @OA\Property(property="data", type="null")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Evento no encontrado",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error del servidor",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     )
+     * )
+     */
     public function destroy($id): JsonResponse
     {
         try {
