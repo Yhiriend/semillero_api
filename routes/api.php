@@ -7,17 +7,17 @@ use Illuminate\Support\Facades\Route;
 use App\Modules\Authentication\Controllers\AuthController;
 use App\Modules\Reports\Controllers\ReportController;
 use App\Modules\Reports\Controllers\EvaluatorController;
-
+use App\Modules\Evaluations\Controllers\EvaluationController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
 
-
     Route::middleware('auth:api')->group(function () {
         Route::get('me', [AuthController::class, 'me']);
         Route::post('refresh', [AuthController::class, 'refresh']);
         Route::post('logout', [AuthController::class, 'logout']);
+        
     });
 });
 
@@ -29,6 +29,8 @@ Route::middleware('auth:api')->group(function () {
         Route::get('events/{eventId}/registered-users', [EventController::class, 'getRegisteredUsers']);
         Route::get('/report/event/{eventoId}', [ReportController::class, 'getEventReport']);
         Route::get('/report/project-scores', [ReportController::class, 'getProjectScores']);
+        Route::get('/actividades', [ReportController::class, 'consultarActividades']);
+        Route::get('/evento/{eventoId}/certificados', [ReportController::class, 'generarCertificadosEvento']); 
     });
 });
 
@@ -38,6 +40,8 @@ Route::middleware('auth:api')->group(function () {
         Route::post('generate-certificate', [ReportController::class, 'generateCertificate']);
         Route::get('evaluators', [EvaluatorController::class, 'index']);
         Route::get('events/{eventId}/registered-users', [EventController::class, 'getRegisteredUsers']);
+        Route::get('/actividades', [ReportController::class, 'consultarActividades']);
+        Route::get('/evento/{eventoId}/certificados', [ReportController::class, 'generarCertificadosEvento']); 
     });
 });
 
