@@ -68,3 +68,34 @@ Route::prefix('events')->middleware(['auth:api', 'roles:Coordinador de Eventos']
     });
 
 });
+
+Route::prefix('evaluations')->group(function () {
+    Route::get('/', [EvaluationController::class, 'index']);
+    Route::post('/', [EvaluationController::class, 'store']);
+    Route::get('/{id}', [EvaluationController::class, 'show']);
+    Route::put('/{id}', [EvaluationController::class, 'update']);
+    Route::delete('/{id}', [EvaluationController::class, 'destroy']);
+
+
+    Route::post('/{id}/cancel', [EvaluationController::class, 'cancel']);
+    Route::post('/{id}/complete', [EvaluationController::class, 'completeEvaluation']);
+    Route::post('/{id}/reassign', [EvaluationController::class, 'reassign']);
+
+
+    Route::get('/project/{projectId}', [EvaluationController::class, 'byProject']);
+    Route::get('/evaluator/{evaluatorId}', [EvaluationController::class, 'byEvaluator']);
+    Route::get('/evaluator/{evaluatorId}/performance', [EvaluationController::class, 'evaluatorPerformance']);
+    Route::get('/project/{projectId}/metrics', [EvaluationController::class, 'metricsByStatus']);
+    Route::get('/status/{status}', [EvaluationController::class, 'byStatus']);
+
+
+    Route::get('/project/{projectId}/available-evaluators', [EvaluationController::class, 'availableEvaluators']);
+
+
+    Route::post('/event/{eventId}/mass-assign', [EvaluationController::class, 'massAssign']);
+
+
+    Route::get('/dashboard/stats', [EvaluationController::class, 'dashboardStats']);
+    Route::get('/event/{eventId}/report', [EvaluationController::class, 'generateReport']);
+    Route::get('/event/{eventId}/unevaluated-projects', [EvaluationController::class, 'unevaluatedProjects']);
+});
