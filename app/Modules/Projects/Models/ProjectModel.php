@@ -4,6 +4,8 @@ namespace App\Modules\Projects\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class ProjectModel extends Model
 {
@@ -38,7 +40,8 @@ class ProjectModel extends Model
         'fecha_inicio',
         'fecha_fin'
     ];
-
+    const CREATED_AT = 'fecha_creacion';
+    const UPDATED_AT = 'fecha_actualizacion';
     /**
      * The attributes that should be cast.
      *
@@ -78,5 +81,30 @@ class ProjectModel extends Model
     public function coordinador()
     {
         return $this->belongsTo(\App\Modules\Users\Models\UserModel::class, 'coordinador_id');
+
     }
-} 
+    public function seedbed(): BelongsTo
+    {
+        return $this->belongsTo(\App\Modules\Seedbeds\Models\SeedbedModel::class, 'semillero_id');
+    }
+
+    public function coordinator(): BelongsTo
+    {
+        return $this->belongsTo(\App\Modules\Users\Models\UserModel::class, 'coordinador_id');
+    }
+
+    public function leader(): BelongsTo
+    {
+        return $this->belongsTo(\App\Modules\Users\Models\UserModel::class, 'lider_id');
+    }
+
+    public function events(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            \App\Modules\Events\Models\EventModel::class,
+            'Proyecto_Evento',
+            'proyecto_id',
+            'evento_id'
+        );
+    }
+}

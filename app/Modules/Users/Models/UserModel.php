@@ -17,7 +17,7 @@ class UserModel extends Authenticatable implements JWTSubject
      *
      * @var string
      */
-    protected $table = 'usuario';
+    protected $table = 'Usuario';
 
     /**
      * The primary key for the model.
@@ -130,8 +130,29 @@ class UserModel extends Authenticatable implements JWTSubject
         return $this->belongsTo(\App\Modules\Programas\Models\ProgramaModel::class, 'programa_id');
     }
 
+    public function roles()
+    {
+        return $this->belongsToMany(
+            \App\Modules\Roles\Models\RolModel::class,
+            'Usuario_Rol',
+            'usuario_id',
+            'rol_id'
+        );
+    }
+
+    public function hasAnyRole(array $roles): bool
+    {
+        return $this->roles()->whereIn('nombre', $roles)->exists();
+    }
+
+    // Método para verificar roles exactos
+    public function hasExactRole($role): bool
+    {
+        return $this->roles()->where('nombre', $role)->exists();
+    }
+
     public function evaluaciones()
     {
         return $this->hasMany(EvaluationModel::class, 'evaluador_id');
     }
-} 
+}
