@@ -1,46 +1,64 @@
 <?php
 
-use App\Modules\Activities\Controllers\ActivityController;
-use App\Modules\Events\Controllers\EventController;
-use App\Modules\Events\Controllers\ProjectEventController;
+use App\Modules\GestionDeSemilleros\Controllers\EvaluacionController;
+use App\Modules\GestionDeSemilleros\Controllers\InscripcionController;
+use App\Modules\GestionDeSemilleros\Controllers\ProyectoController;
+use App\Modules\GestionDeSemilleros\Controllers\SemilleroApiController;
+use App\Modules\GestionDeSemilleros\Controllers\ActividadController;
+
 use Illuminate\Support\Facades\Route;
-use App\Modules\Authentication\Controllers\AuthController;
 
-Route::prefix('auth')->group(function () {
-    Route::post('register', [AuthController::class, 'register']);
-    Route::post('login', [AuthController::class, 'login']);
+Route::get('/', function () {
+    return view('welcome');
+});
 
-    Route::middleware('auth:api')->group(function () {
-        Route::get('me', [AuthController::class, 'me']);
-        Route::post('refresh', [AuthController::class, 'refresh']);
-        Route::post('logout', [AuthController::class, 'logout']);
+// SEMILLEROS (Integrante Semillero y Coordinador Semillero)
+Route::middleware(['auth:api'])->group(function () {
+
+    // Integrante Semillero: puede consultar
+    Route::middleware(['check.api.role:Integrante Semillero'])->group(function () {
+        Route::get('/semilleros', [SemilleroApiController::class, 'index'])->name('semilleros.index');
+        Route::get('/semilleros/{id}', [SemilleroApiController::class, 'show'])->name('semilleros.show');
     });
+
+    // Coordinador de Semillero: puede crear, actualizar, eliminar
+    Route::middleware(['check.api.role:Coordinador de Semillero'])->group(function () {
+        Route::post('/semilleros', [SemilleroApiController::class, 'store'])->name('semilleros.store');
+        Route::put('/semilleros/{id}', [SemilleroApiController::class, 'update'])->name('semilleros.update');
+        Route::delete('/semilleros/{id}', [SemilleroApiController::class, 'delete'])->name('semilleros.delete');
+
+        // Inscripciones
+        Route::get('/inscripciones', [InscripcionController::class, 'index'])->name('inscripciones.index');
+        Route::post('/inscripciones', [InscripcionController::class, 'store'])->name('inscripciones.store');
+    });
+
 });
 
 
-Route::prefix('events')->middleware(['auth:api', 'roles:Coordinador de Eventos'])->group(function () {
+// PROYECTOS (Todos pueden consultar, Coordinador Proyecto gestiona)
 
-    Route::get('/', [EventController::class, 'index']);
-    Route::post('/', [EventController::class, 'store']);
-    Route::get('/{event}', [EventController::class, 'show']);
-    Route::put('/{event}', [EventController::class, 'update']);
-    Route::delete('/{event}', [EventController::class, 'destroy']);
+Route::middleware(['auth:api'])->group(function () {
 
+    // Consultar proyectos (disponible para todos los autenticados)
+    Route::get('/proyectos', [ProyectoController::class, 'index'])->name('proyectos.index');
 
-    Route::prefix('{event}/activities')->group(function () {
-        Route::get('/', [ActivityController::class, 'index']);
-        Route::post('/', [ActivityController::class, 'store']);
-        Route::get('/{activity}', [ActivityController::class, 'show']);
-        Route::put('/{activity}', [ActivityController::class, 'update']);
-        Route::delete('/{activity}', [ActivityController::class, 'destroy']);
-        Route::post('/{activity}/assign-responsables', [ActivityController::class, 'assignResponsables']);
-    });
+    // Coordinador de Proyecto: crear, asignar, evaluar
+    Route::middleware(['check.api.role:Coordinador de Proyecto'])->group(function () {
+        Route::post('/proyectos', [ProyectoController::class, 'store'])->name('proyectos.store');
+        Route::post('/proyectos/{id}/asignar-estudiantes', [ProyectoController::class, 'asignarEstudiantes'])->name('proyectos.asignar_estudiantes');
+        Route::put('/proyectos/{id}/evaluar', [ProyectoController::class, 'evaluar'])->name('proyectos.evaluar');
 
-    Route::prefix('{event}/projects')->group(function () {
-        Route::get('/', [ProjectEventController::class, 'index']); 
-        Route::post('/', [ProjectEventController::class, 'store']);
-        Route::get('/{project}', [ProjectEventController::class, 'show']);
-        Route::delete('/{project}', [ProjectEventController::class, 'destroy']);
+        // Actividades y evaluaciones (registrar)
+        Route::post('/actividades', [ActividadController::class, 'registrar']);
+        Route::post('/evaluaciones', [EvaluacionController::class, 'registrar']);
+
+        // Listar actividades y evaluaciones
+        Route::get('/actividades', [ActividadController::class, 'listar']);
+        Route::get('/evaluaciones', [EvaluacionController::class, 'listar']);
     });
 
 });
+
+
+
+

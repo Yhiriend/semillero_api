@@ -24,6 +24,7 @@ class AuthController
         $this->authService = $authService;
     }
 
+    /*
     /**
      * @OA\Post(
      *     path="/api/auth/register",
@@ -76,6 +77,7 @@ class AuthController
         return $this->successResponse($result, 'Usuario registrado correctamente', 201);
     }
 
+    /*
     /**
      * @OA\Post(
      *     path="/api/auth/login",
@@ -126,6 +128,7 @@ class AuthController
         }
     }
 
+    /*
     /**
      * @OA\Post(
      *     path="/api/auth/refresh",
@@ -164,6 +167,7 @@ class AuthController
         }
     }
 
+    /*
     /**
      * @OA\Get(
      *     path="/api/auth/me",
@@ -198,6 +202,7 @@ class AuthController
         return $this->successResponse($this->authService->me());
     }
 
+    /*
     /**
      * @OA\Post(
      *     path="/api/auth/logout",

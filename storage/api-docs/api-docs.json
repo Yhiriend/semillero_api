@@ -12,60 +12,93 @@
         {
             "url": "http://localhost:8000",
             "description": "Servidor Local"
+        },
+        {
+            "url": "/api"
         }
     ],
     "paths": {
-        "/api/auth/register": {
+        "/api/inscripciones": {
+            "get": {
+                "tags": [
+                    "Inscripciones"
+                ],
+                "summary": "Listar inscripciones a semilleros",
+                "operationId": "32430190a83b3e7d02fd0b80ff16641f",
+                "parameters": [
+                    {
+                        "name": "semillero_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "usuario_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de inscripciones",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "semillero_id": {
+                                                "type": "integer"
+                                            },
+                                            "usuario_id": {
+                                                "type": "integer"
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             "post": {
                 "tags": [
-                    "Autenticación"
+                    "Inscripciones"
                 ],
-                "summary": "Registrar un nuevo usuario",
-                "operationId": "6aaed85c1374140defb82d788c59c543",
+                "summary": "Inscribir estudiante a un semillero",
+                "description": "Registra una nueva inscripción de estudiante a semillero",
+                "operationId": "storeInscripcion",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "name",
-                                    "email",
-                                    "password",
-                                    "password_confirmation",
-                                    "tipo"
+                                    "semillero_id",
+                                    "usuario_id"
                                 ],
                                 "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "Juan Pérez"
-                                    },
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "juan@ejemplo.com"
-                                    },
-                                    "password": {
-                                        "type": "string",
-                                        "format": "password",
-                                        "example": "123456"
-                                    },
-                                    "password_confirmation": {
-                                        "type": "string",
-                                        "format": "password",
-                                        "example": "123456"
-                                    },
-                                    "tipo": {
-                                        "type": "string",
-                                        "enum": [
-                                            "estudiante",
-                                            "profesor",
-                                            "administrador"
-                                        ],
-                                        "example": "estudiante"
-                                    },
-                                    "programa_id": {
+                                    "semillero_id": {
                                         "type": "integer",
                                         "example": 1
+                                    },
+                                    "usuario_id": {
+                                        "type": "integer",
+                                        "example": 5
                                     }
                                 },
                                 "type": "object"
@@ -75,26 +108,121 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Usuario registrado exitosamente",
+                        "description": "Inscripción exitosa",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "status": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
                                         "message": {
                                             "type": "string",
-                                            "example": "Usuario registrado correctamente"
+                                            "example": "Inscripción realizada correctamente."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflicto - Ya existe inscripción",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "El estudiante ya está inscrito en este semillero."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Datos no válidos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Los datos proporcionados no son válidos."
                                         },
-                                        "data": {
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/proyectos": {
+            "get": {
+                "tags": [
+                    "Proyectos"
+                ],
+                "summary": "Consultar proyectos de un semillero",
+                "description": "Devuelve todos los proyectos asociados a un semillero específico con información detallada",
+                "operationId": "getProyectosPorSemillero",
+                "parameters": [
+                    {
+                        "name": "semillero_id",
+                        "in": "query",
+                        "description": "ID del semillero",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "estado",
+                        "in": "query",
+                        "description": "Filtrar por estado del proyecto",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "activo",
+                                "inactivo",
+                                "finalizado",
+                                "en_revision"
+                            ],
+                            "example": "activo"
+                        }
+                    },
+                    {
+                        "name": "incluir_evaluaciones",
+                        "in": "query",
+                        "description": "Incluir evaluaciones de los proyectos",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "example": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado de proyectos del semillero",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "meta": {
                                             "properties": {
-                                                "user": {
-                                                    "type": "object"
+                                                "total_proyectos": {
+                                                    "type": "integer",
+                                                    "example": 5
                                                 },
-                                                "token": {
-                                                    "type": "string"
+                                                "semillero": {
+                                                    "type": "string",
+                                                    "example": "Semillero de IA"
                                                 }
                                             },
                                             "type": "object"
@@ -105,38 +233,213 @@
                             }
                         }
                     },
-                    "422": {
-                        "description": "Error de validación"
+                    "404": {
+                        "description": "Semillero no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Semillero no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No autenticado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
-                }
-            }
-        },
-        "/api/auth/login": {
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
             "post": {
                 "tags": [
-                    "Autenticación"
+                    "Proyectos"
                 ],
-                "summary": "Iniciar sesión",
-                "operationId": "fc1512dc98dc9e42bd66aacb760c391e",
+                "summary": "Registrar nuevo proyecto en un semillero (sin autenticación)",
+                "description": "Registra un proyecto asociado a un semillero con todos los campos requeridos.",
+                "operationId": "storeProyecto",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "email",
-                                    "password"
+                                    "titulo",
+                                    "semillero_id",
+                                    "descripcion",
+                                    "lider_id",
+                                    "coordinador_id",
+                                    "estado",
+                                    "fecha_inicio",
+                                    "fecha_fin"
                                 ],
                                 "properties": {
-                                    "email": {
+                                    "titulo": {
                                         "type": "string",
-                                        "format": "email",
-                                        "example": "juan@ejemplo.com"
+                                        "example": "Proyecto de Energía Solar"
                                     },
-                                    "password": {
+                                    "descripcion": {
                                         "type": "string",
-                                        "format": "password",
-                                        "example": "123456"
+                                        "example": "Desarrollo de paneles solares para zonas rurales."
+                                    },
+                                    "semillero_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "lider_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "coordinador_id": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "estado": {
+                                        "type": "string",
+                                        "example": "Activo"
+                                    },
+                                    "fecha_inicio": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-05-09"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Proyecto registrado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "titulo": {
+                                            "type": "string",
+                                            "example": "Proyecto de Energía Solar"
+                                        },
+                                        "descripcion": {
+                                            "type": "string",
+                                            "example": "Desarrollo de paneles solares para zonas rurales."
+                                        },
+                                        "semillero_id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "lider_id": {
+                                            "type": "integer",
+                                            "example": 5
+                                        },
+                                        "coordinador_id": {
+                                            "type": "integer",
+                                            "example": 3
+                                        },
+                                        "estado": {
+                                            "type": "string",
+                                            "example": "Activo"
+                                        },
+                                        "fecha_inicio": {
+                                            "type": "string",
+                                            "format": "date",
+                                            "example": "2025-05-09"
+                                        },
+                                        "fecha_creacion": {
+                                            "type": "string",
+                                            "example": "2025-05-09T18:30:00.000000Z"
+                                        },
+                                        "fecha_actualizacion": {
+                                            "type": "string",
+                                            "example": "2025-05-09T18:30:00.000000Z"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Los datos proporcionados no son válidos."
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/proyectos/{id}/asignar-estudiantes": {
+            "post": {
+                "tags": [
+                    "Proyectos"
+                ],
+                "summary": "Asignar estudiantes a un proyecto",
+                "description": "Permite asignar estudiantes a un proyecto específico.",
+                "operationId": "1c7e04bc5805afb4376b8e1df3227b88",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del proyecto",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "estudiantes"
+                                ],
+                                "properties": {
+                                    "estudiantes": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer",
+                                            "example": 1
+                                        }
                                     }
                                 },
                                 "type": "object"
@@ -146,29 +449,14 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Login exitoso",
+                        "description": "Estudiantes asignados correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "status": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
                                         "message": {
                                             "type": "string",
-                                            "example": "Login exitoso"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "user": {
-                                                    "type": "object"
-                                                },
-                                                "token": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "type": "object"
+                                            "example": "Estudiantes asignados correctamente"
                                         }
                                     },
                                     "type": "object"
@@ -176,44 +464,165 @@
                             }
                         }
                     },
-                    "422": {
-                        "description": "Error de validación"
+                    "404": {
+                        "description": "Proyecto no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Proyecto no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Lista de estudiantes inválida",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Lista de estudiantes inválida"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             }
         },
-        "/api/auth/refresh": {
-            "post": {
+        "/api/proyectos/{id}/evaluar": {
+            "put": {
                 "tags": [
-                    "Autenticación"
+                    "Proyectos"
                 ],
-                "summary": "Refrescar token",
-                "operationId": "d5c975c4dacc9e06c3daff06a559a092",
+                "summary": "Evaluar un proyecto",
+                "description": "Permite evaluar un proyecto sin restricciones de autenticación.",
+                "operationId": "e1850c6158f4b503ea0c364a19156762",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del proyecto",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "evaluador_id",
+                                    "dominio_tema",
+                                    "manejo_auditorio",
+                                    "planteamiento_problema"
+                                ],
+                                "properties": {
+                                    "evaluador_id": {
+                                        "type": "integer",
+                                        "example": 18
+                                    },
+                                    "dominio_tema": {
+                                        "type": "integer",
+                                        "maximum": 5,
+                                        "minimum": 1,
+                                        "example": 4
+                                    },
+                                    "manejo_auditorio": {
+                                        "type": "integer",
+                                        "maximum": 5,
+                                        "minimum": 1,
+                                        "example": 3
+                                    },
+                                    "planteamiento_problema": {
+                                        "type": "integer",
+                                        "maximum": 5,
+                                        "minimum": 1,
+                                        "example": 4
+                                    },
+                                    "justificacion": {
+                                        "type": "integer",
+                                        "maximum": 5,
+                                        "minimum": 1,
+                                        "example": 3
+                                    },
+                                    "objetivo_general": {
+                                        "type": "integer",
+                                        "maximum": 5,
+                                        "minimum": 1,
+                                        "example": 4
+                                    },
+                                    "objetivo_especifico": {
+                                        "type": "integer",
+                                        "maximum": 5,
+                                        "minimum": 1,
+                                        "example": 4
+                                    },
+                                    "marco_teorico": {
+                                        "type": "integer",
+                                        "maximum": 5,
+                                        "minimum": 1,
+                                        "example": 3
+                                    },
+                                    "metodologia": {
+                                        "type": "integer",
+                                        "maximum": 5,
+                                        "minimum": 1,
+                                        "example": 2
+                                    },
+                                    "resultado_esperado": {
+                                        "type": "integer",
+                                        "maximum": 5,
+                                        "minimum": 1,
+                                        "example": 4
+                                    },
+                                    "referencia_bibliografica": {
+                                        "type": "integer",
+                                        "maximum": 5,
+                                        "minimum": 1,
+                                        "example": 3
+                                    },
+                                    "comentarios": {
+                                        "type": "string",
+                                        "example": "Proyecto sólido, pero necesita mejorar la metodología"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
-                    "200": {
-                        "description": "Token refrescado exitosamente",
+                    "201": {
+                        "description": "Evaluación registrada correctamente",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "status": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
                                         "message": {
                                             "type": "string",
-                                            "example": "Token refrescado exitosamente"
+                                            "example": "Evaluación registrada correctamente"
                                         },
-                                        "data": {
-                                            "properties": {
-                                                "user": {
-                                                    "type": "object"
-                                                },
-                                                "token": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "type": "object"
+                                        "puntuacion": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 3.4
+                                        },
+                                        "puntaje_total": {
+                                            "type": "integer",
+                                            "example": 34
                                         }
                                     },
                                     "type": "object"
@@ -221,121 +630,205 @@
                             }
                         }
                     },
-                    "401": {
-                        "description": "No autorizado"
+                    "404": {
+                        "description": "Proyecto no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Proyecto no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "El proyecto no está inscrito en un evento",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "El proyecto debe estar inscrito en un evento para ser evaluado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
+                }
             }
         },
-        "/api/auth/me": {
+        "/api/semilleros": {
             "get": {
                 "tags": [
-                    "Autenticación"
+                    "CRUD Semilleros"
                 ],
-                "summary": "Obtener información del usuario actual",
-                "operationId": "8cd9a06255417502ac524fdda2033854",
+                "summary": "Listar todos los semilleros",
+                "operationId": "e82b9d0ae33e4ea263875e498b0940ea",
                 "responses": {
                     "200": {
-                        "description": "Información del usuario",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Operación exitosa"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "integer",
-                                                    "example": 1
-                                                },
-                                                "nombre": {
-                                                    "type": "string",
-                                                    "example": "Juan Pérez"
-                                                },
-                                                "email": {
-                                                    "type": "string",
-                                                    "example": "juan@ejemplo.com"
-                                                },
-                                                "tipo": {
-                                                    "type": "string",
-                                                    "example": "estudiante"
-                                                },
-                                                "programa_id": {
-                                                    "type": "integer",
-                                                    "example": 1
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "No autorizado"
+                        "description": "Listado de semilleros"
                     }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/auth/logout": {
+                }
+            },
             "post": {
                 "tags": [
-                    "Autenticación"
+                    "CRUD Semilleros"
                 ],
-                "summary": "Cerrar sesión",
-                "operationId": "e1778fee5a6f9c1efb7fc024f87a262f",
-                "responses": {
-                    "200": {
-                        "description": "Sesión cerrada exitosamente",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Sesión cerrada correctamente"
-                                        },
-                                        "data": {
-                                            "type": "null"
-                                        }
+                "summary": "Crear un nuevo semillero",
+                "operationId": "4d9fd225c6ab0a9c432e3c84de3b91dd",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre",
+                                    "descripcion",
+                                    "programa_id",
+                                    "profesor_id"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string"
                                     },
-                                    "type": "object"
-                                }
+                                    "descripcion": {
+                                        "type": "string"
+                                    },
+                                    "programa_id": {
+                                        "type": "integer"
+                                    },
+                                    "profesor_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
                             }
                         }
-                    },
-                    "401": {
-                        "description": "No autorizado"
                     }
                 },
-                "security": [
-                    {
-                        "bearerAuth": []
+                "responses": {
+                    "201": {
+                        "description": "Semillero creado correctamente"
                     }
-                ]
+                }
+            }
+        },
+        "/api/semilleros/{id}": {
+            "get": {
+                "tags": [
+                    "CRUD Semilleros"
+                ],
+                "summary": "Consultar un semillero por ID",
+                "operationId": "5af90950553e1ed1d43222cdc122ee5b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del semillero",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Semillero encontrado"
+                    },
+                    "404": {
+                        "description": "Semillero no encontrado"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "CRUD Semilleros"
+                ],
+                "summary": "Actualizar un semillero por ID",
+                "operationId": "a27a74b1df9672b74f328bc94570d50c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del semillero",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre",
+                                    "descripcion",
+                                    "programa_id",
+                                    "profesor_id"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string"
+                                    },
+                                    "descripcion": {
+                                        "type": "string"
+                                    },
+                                    "programa_id": {
+                                        "type": "integer"
+                                    },
+                                    "profesor_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Semillero actualizado correctamente"
+                    },
+                    "404": {
+                        "description": "Semillero no encontrado"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "CRUD Semilleros"
+                ],
+                "summary": "Eliminar un semillero por ID",
+                "operationId": "65ba56f23809aef3cac603d90fa8595e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del semillero",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Semillero eliminado correctamente"
+                    },
+                    "404": {
+                        "description": "Semillero no encontrado"
+                    }
+                }
             }
         }
     },
@@ -350,8 +843,16 @@
     },
     "tags": [
         {
-            "name": "Autenticación",
-            "description": "Endpoints para la autenticación de usuarios"
+            "name": "Inscripciones",
+            "description": "Inscripciones"
+        },
+        {
+            "name": "Proyectos",
+            "description": "Proyectos"
+        },
+        {
+            "name": "CRUD Semilleros",
+            "description": "CRUD Semilleros"
         }
     ]
 }
