@@ -62,4 +62,34 @@ class ReportController extends Controller
         $pdf = $this->certificateService->generateParticipationCertificate($data);
         return $pdf->download('certificado-participacion.pdf');
     }
+
+    public function getEventReport(Request $request, int $eventoId): JsonResponse
+{
+    try {
+        $report = $this->certificateService->getEventReport($eventoId);
+
+        if (empty($report)) {
+            return $this->errorResponse('No se encontraron actividades para este evento', 404);
+        }
+
+        return $this->successResponse($report, 'Reporte del evento generado exitosamente');
+    } catch (\Exception $e) {
+        return $this->errorResponse('Error al generar el reporte: ' . $e->getMessage(), 500);
+    }
+}
+
+public function getProjectScores(Request $request): JsonResponse
+{
+    try {
+        $scores = $this->certificateService->getProjectScores();
+
+        if (empty($scores)) {
+            return $this->errorResponse('No se encontraron evaluaciones completadas.', 404);
+        }
+
+        return $this->successResponse($scores, 'Calificaciones de proyectos obtenidas exitosamente');
+    } catch (\Exception $e) {
+        return $this->errorResponse('Error al obtener calificaciones: ' . $e->getMessage(), 500);
+    }
+}
 } 
