@@ -5,6 +5,8 @@ use App\Modules\Events\Controllers\EventController;
 use App\Modules\Events\Controllers\ProjectEventController;
 use Illuminate\Support\Facades\Route;
 use App\Modules\Authentication\Controllers\AuthController;
+use App\Modules\Projects\Controllers\ProjectController;
+
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -43,4 +45,16 @@ Route::prefix('events')->middleware(['auth:api', 'roles:Coordinador de Eventos']
         Route::delete('/{project}', [ProjectEventController::class, 'destroy']);
     });
 
+});
+
+Route::prefix('projects')->group(function () {
+    Route::get('/', [ProjectController::class, 'getAllProjects'])->name('projects.getAllProjects');
+    Route::get('/{id}', [ProjectController::class, 'getProjectById'])->name('projects.getProjectById');
+    
+    Route::post('/{id}', [ProjectController::class, 'storeProject'])->name('projects.storeProject');
+    Route::post('/{id}/asignar-estudiantes', [ProjectController::class, 'assignStudentToProject']);
+    
+    // Esta ruta solo la puede usar los rol coordinador y admin
+    Route::put('/{id}/status', action: [ProjectController::class, 'updateStatus'])->name('projects.updateStatus');
+    Route::put('/{id}', action: [ProjectController::class, 'updateProject'])->name('projects.updateProject');
 });
