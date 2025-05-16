@@ -14,7 +14,7 @@ class UpdateStatusProjectRequest extends FormRequest
     public function rules()
     {
         return [
-            'status' => 'required|in:activo,inactivo,completado,cancelado',
+            'status' => 'required|in:propuesta,en revision,aprobado,rechazado',
         ];
     }
 
