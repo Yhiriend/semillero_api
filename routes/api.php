@@ -1,5 +1,8 @@
 <?php
 
+use App\Modules\Activities\Controllers\ActivityController;
+use App\Modules\Events\Controllers\EventController;
+use App\Modules\Events\Controllers\ProjectEventController;
 use Illuminate\Support\Facades\Route;
 use App\Modules\Authentication\Controllers\AuthController;
 
@@ -12,4 +15,32 @@ Route::prefix('auth')->group(function () {
         Route::post('refresh', [AuthController::class, 'refresh']);
         Route::post('logout', [AuthController::class, 'logout']);
     });
+});
+
+
+Route::prefix('events')->middleware(['auth:api', 'roles:Coordinador de Eventos'])->group(function () {
+
+    Route::get('/', [EventController::class, 'index']);
+    Route::post('/', [EventController::class, 'store']);
+    Route::get('/{event}', [EventController::class, 'show']);
+    Route::put('/{event}', [EventController::class, 'update']);
+    Route::delete('/{event}', [EventController::class, 'destroy']);
+
+
+    Route::prefix('{event}/activities')->group(function () {
+        Route::get('/', [ActivityController::class, 'index']);
+        Route::post('/', [ActivityController::class, 'store']);
+        Route::get('/{activity}', [ActivityController::class, 'show']);
+        Route::put('/{activity}', [ActivityController::class, 'update']);
+        Route::delete('/{activity}', [ActivityController::class, 'destroy']);
+        Route::post('/{activity}/assign-responsables', [ActivityController::class, 'assignResponsables']);
+    });
+
+    Route::prefix('{event}/projects')->group(function () {
+        Route::get('/', [ProjectEventController::class, 'index']); 
+        Route::post('/', [ProjectEventController::class, 'store']);
+        Route::get('/{project}', [ProjectEventController::class, 'show']);
+        Route::delete('/{project}', [ProjectEventController::class, 'destroy']);
+    });
+
 });
