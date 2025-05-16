@@ -1,0 +1,90 @@
+<?php
+
+namespace App\Modules\Reports\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+use App\Modules\Reports\Models\Proyecto;
+use App\Modules\Users\Models\UserModel;
+
+class Eventos extends Model
+{
+    protected $table = 'Evento';
+    protected $primaryKey = 'id';
+    protected $fillable = [
+        'nombre',
+        'descripcion',
+        'coordinador_id',
+        'fecha_inicio',
+        'fecha_fin',
+        'ubicacion',
+    ];
+
+    protected $casts = [
+        'fecha_inicio' => 'datetime', 
+        'fecha_fin' => 'datetime',
+        'fecha_creacion' => 'datetime',
+        'fecha_actualizacion' => 'datetime',
+    ];
+
+    const CREATED_AT = 'fecha_creacion';
+    const UPDATED_AT = 'fecha_actualizacion';
+
+    public function coordinador(): BelongsTo
+    {
+        return $this->belongsTo(\App\Modules\Users\Models\UserModel::class, 'coordinador_id');
+    }
+
+    public function activities(): HasMany
+    {
+        return $this->hasMany(
+            \App\Modules\Activities\Models\ActivityModel::class,
+            'evento_id',
+            'id'
+        );
+    }
+
+    public function projects(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            \App\Modules\Projects\Models\ProjectModel::class,
+            'Proyecto_Evento',
+            'evento_id',
+            'proyecto_id'
+        );
+    }
+
+    public function coordinadorRe(): BelongsTo
+    {
+        return $this->belongsTo(Usuario::class, 'coordinador_id');
+    }
+
+    public function projectsRe(): BelongsToMany
+    {
+        return $this->belongsToMany(Proyecto::class, 'proyecto_evento', 'evento_id', 'proyecto_id')
+            ->withPivot('observaciones', 'fecha_inscripcion');
+    }
+
+    public function registeredUsers()
+    {
+        return UserModel::select([
+                'usuario.*',
+                'proyecto.id as proyecto_id',
+                'proyecto.titulo as proyecto_titulo',
+                'proyecto_evento.fecha_inscripcion',
+                'semillero.id as semillero_id',
+                'semillero.nombre as semillero_nombre'
+            ])
+            ->join('proyecto_usuario', 'usuario.id', '=', 'proyecto_usuario.usuario_id')
+            ->join('proyecto', 'proyecto_usuario.proyecto_id', '=', 'proyecto.id')
+            ->join('semillero', 'proyecto.semillero_id', '=', 'semillero.id')
+            ->join('proyecto_evento', 'proyecto.id', '=', 'proyecto_evento.proyecto_id')
+            ->where('proyecto_evento.evento_id', $this->id)
+            ->orderBy('semillero.nombre')
+            ->orderBy('proyecto.titulo')
+            ->orderBy('usuario.nombre');
+    }
+}
