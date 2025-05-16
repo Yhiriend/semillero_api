@@ -26,18 +26,8 @@ Route::prefix('events')->middleware(['auth:api', 'roles:Coordinador de Eventos']
     Route::put('/{event}', [EventController::class, 'update']);
     Route::delete('/{event}', [EventController::class, 'destroy']);
 
-
-    Route::prefix('{event}/activities')->group(function () {
-        Route::get('/', [ActivityController::class, 'index']);
-        Route::post('/', [ActivityController::class, 'store']);
-        Route::get('/{activity}', [ActivityController::class, 'show']);
-        Route::put('/{activity}', [ActivityController::class, 'update']);
-        Route::delete('/{activity}', [ActivityController::class, 'destroy']);
-        Route::post('/{activity}/assign-responsables', [ActivityController::class, 'assignResponsables']);
-    });
-
     Route::prefix('{event}/projects')->group(function () {
-        Route::get('/', [ProjectEventController::class, 'index']); 
+        Route::get('/', [ProjectEventController::class, 'index']);
         Route::post('/', [ProjectEventController::class, 'store']);
         Route::get('/{project}', [ProjectEventController::class, 'show']);
         Route::delete('/{project}', [ProjectEventController::class, 'destroy']);
