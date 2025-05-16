@@ -24,7 +24,6 @@ class CheckApiRole
                 return $this->jsonResponse(403, 'No se especificaron roles requeridos');
             }
 
-            // Verifica si el usuario tiene al menos uno de los roles requeridos
             if ($user->hasAnyRole($processedRoles)) {
                 return $next($request);
             }
@@ -54,7 +53,6 @@ class CheckApiRole
 
         return $result;
     }
-
 
     protected function jsonResponse(int $status, string $message, array $data = []): Response
     {

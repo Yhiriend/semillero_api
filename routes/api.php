@@ -5,19 +5,116 @@ use App\Modules\Seedbeds\Controllers\SeedbedsController;
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 Route::middleware(['auth:api'])->group(function () {
 
-    Route::middleware(['check.api.role:Integrante Semillero'])->group(function () {
+    Route::middleware(['roles:Integrante Semillero'])->group(function () {
         Route::get('/seedbeds', [SeedbedsController::class, 'index'])->name('semilleros.index');
         Route::get('/seedbeds/{id}', [SeedbedsController::class, 'show'])->name('semilleros.show');
     });
 
-    Route::middleware(['check.api.role:Coordinador de Semillero'])->group(function () {
+    Route::middleware(['roles:Coordinador de Semillero'])->group(function () {
         Route::post('/seedbeds', [SeedbedsController::class, 'store'])->name('semilleros.store');
         Route::put('/seedbeds/{id}', [SeedbedsController::class, 'update'])->name('semilleros.update');
         Route::delete('/seedbeds/{id}', [SeedbedsController::class, 'delete'])->name('semilleros.delete');
@@ -27,6 +124,15 @@ Route::middleware(['auth:api'])->group(function () {
     });
 
 });
+
+
+
+
+
+
+
+
+
 
 
 
