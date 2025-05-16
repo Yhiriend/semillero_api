@@ -1,6 +1,6 @@
 <?php
 
-use App\Modules\Activities\Controllers\ActivityController;
+use App\Modules\Evaluations\Controllers\EvaluationController;
 use App\Modules\Events\Controllers\EventController;
 use App\Modules\Events\Controllers\ProjectEventController;
 use App\Modules\Faculties\Controllers\FacultyController;
@@ -8,7 +8,8 @@ use App\Modules\Universities\Controllers\UniversityController;
 use Illuminate\Support\Facades\Route;
 use App\Modules\Authentication\Controllers\AuthController;
 use App\Modules\Projects\Controllers\ProjectController;
-
+use App\Modules\Seedbeds\Controllers\InscriptionController;
+use App\Modules\Seedbeds\Controllers\SeedbedsController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -59,19 +60,16 @@ Route::prefix('faculties')->middleware(['auth:api', 'roles:Administrador'])->gro
 Route::prefix('projects')->group(function () {
     Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->get('/', [ProjectController::class, 'getAllProjects'])->name('projects.getAllProjects');
     Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->get('/{id}', [ProjectController::class, 'getProjectById'])->name('projects.getProjectById');
-    
+
     Route::middleware(['auth:api', 'roles:Lider de Proyecto,Administrador'])->post('/{id}', [ProjectController::class, 'storeProject'])->name('projects.storeProject');
     Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->post('/{id}/asignar-estudiantes', [ProjectController::class, 'assignStudentToProject']);
-    
+
     Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->put('/{id}/status', [ProjectController::class, 'updateStatus'])->name('projects.updateStatus');
     Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->put('/{id}', [ProjectController::class, 'updateProject'])->name('projects.updateProject');
 
 });
 
 
-
-
- feature/evaluation-management
 Route::prefix('evaluations')->group(function () {
     Route::get('/', [EvaluationController::class, 'index']);
     Route::post('/', [EvaluationController::class, 'store']);
@@ -79,11 +77,9 @@ Route::prefix('evaluations')->group(function () {
     Route::put('/{id}', [EvaluationController::class, 'update']);
     Route::delete('/{id}', [EvaluationController::class, 'destroy']);
 
-
     Route::post('/{id}/cancel', [EvaluationController::class, 'cancel']);
     Route::post('/{id}/complete', [EvaluationController::class, 'completeEvaluation']);
     Route::post('/{id}/reassign', [EvaluationController::class, 'reassign']);
-
 
     Route::get('/project/{projectId}', [EvaluationController::class, 'byProject']);
     Route::get('/evaluator/{evaluatorId}', [EvaluationController::class, 'byEvaluator']);
@@ -91,15 +87,32 @@ Route::prefix('evaluations')->group(function () {
     Route::get('/project/{projectId}/metrics', [EvaluationController::class, 'metricsByStatus']);
     Route::get('/status/{status}', [EvaluationController::class, 'byStatus']);
 
-
     Route::get('/project/{projectId}/available-evaluators', [EvaluationController::class, 'availableEvaluators']);
 
-
     Route::post('/event/{eventId}/mass-assign', [EvaluationController::class, 'massAssign']);
-
 
     Route::get('/dashboard/stats', [EvaluationController::class, 'dashboardStats']);
     Route::get('/event/{eventId}/report', [EvaluationController::class, 'generateReport']);
     Route::get('/event/{eventId}/unevaluated-projects', [EvaluationController::class, 'unevaluatedProjects']);
-  
-  });
+
+});
+
+
+
+Route::middleware(['auth:api'])->group(function () {
+
+    Route::middleware(['roles:Integrante Semillero'])->group(function () {
+        Route::get('/seedbeds', [SeedbedsController::class, 'index'])->name('semilleros.index');
+        Route::get('/seedbeds/{id}', [SeedbedsController::class, 'show'])->name('semilleros.show');
+    });
+
+    Route::middleware(['roles:Coordinador de Semillero'])->group(function () {
+        Route::post('/seedbeds', [SeedbedsController::class, 'store'])->name('semilleros.store');
+        Route::put('/seedbeds/{id}', [SeedbedsController::class, 'update'])->name('semilleros.update');
+        Route::delete('/seedbeds/{id}', [SeedbedsController::class, 'delete'])->name('semilleros.delete');
+
+        Route::get('/inscriptions', [InscriptionController::class, 'index'])->name('inscripciones.index');
+        Route::post('/inscriptions', [InscriptionController::class, 'store'])->name('inscripciones.store');
+    });
+
+});
