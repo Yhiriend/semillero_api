@@ -4,6 +4,7 @@ namespace App\Modules\Faculties\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class FacultyModel extends Model
 {
@@ -30,5 +31,10 @@ class FacultyModel extends Model
     public function university(): BelongsTo
     {
         return $this->belongsTo(\App\Modules\Universities\Models\UniversityModel::class, 'universidad_id', 'id');
+    }
+
+    public function programs(): HasMany
+    {
+        return $this->hasMany(\App\Modules\Programs\Models\ProgramModel::class, 'facultad_id', 'id');
     }
 }
