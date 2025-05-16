@@ -3,6 +3,7 @@
 use App\Modules\Activities\Controllers\ActivityController;
 use App\Modules\Events\Controllers\EventController;
 use App\Modules\Events\Controllers\ProjectEventController;
+use App\Modules\Faculties\Controllers\FacultyController;
 use App\Modules\Universities\Controllers\UniversityController;
 use Illuminate\Support\Facades\Route;
 use App\Modules\Authentication\Controllers\AuthController;
@@ -53,4 +54,12 @@ Route::prefix('universities')->middleware(['auth:api', 'roles:Administrador'])->
     Route::get('/{university}', [UniversityController::class, 'show']);
     Route::put('/{university}', [UniversityController::class, 'update']);
     Route::delete('/{university}', [UniversityController::class, 'destroy']);
+});
+
+Route::prefix('faculties')->middleware(['auth:api', 'roles:Administrador'])->group(function () {
+    Route::get('/', [FacultyController::class, 'index']);
+    Route::post('/', [FacultyController::class, 'store']);
+    Route::get('/{faculty}', [FacultyController::class, 'show']);
+    Route::put('/{faculty}', [FacultyController::class, 'update']);
+    Route::delete('/{faculty}', [FacultyController::class, 'destroy']);
 });
