@@ -2,15 +2,11 @@
 
 namespace App\Modules\Events\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\BaseRequest;
 
-class ListEventsRequest extends FormRequest
+
+class ListEventsRequest extends BaseRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     public function rules(): array
     {
         return [

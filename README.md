@@ -362,7 +362,7 @@ Esta sección describe la asignación de tareas para el desarrollo de los módul
 
 
 ---
-# 🚀 Guía para colaboradores
+# 🚀 MANUAL DE INSTALACIÓN 
 
 ## 1. Clonar el repositorio
 ```bash
