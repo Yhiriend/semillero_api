@@ -11,12 +11,14 @@ class EventRepository
 {
     public function getFilteredEvents(array $filters): Collection
     {
-        return $this->buildQuery($filters)->get();
+        return $this->buildQuery($filters)
+            ->with(['coordinador', 'activities.responsables'])
+            ->get();
     }
 
     public function findOrFail(int $id): EventModel
     {
-        $event = EventModel::with('coordinador')->find($id);
+        $event = EventModel::with(['coordinador', 'activities.responsables'])->find($id);
 
         if (!$event) {
             throw new ModelNotFoundException("Evento no encontrado con ID: {$id}");
@@ -43,7 +45,7 @@ class EventRepository
 
     protected function buildQuery(array $filters): Builder
     {
-        $query = EventModel::with('coordinador');
+        $query = EventModel::with(['coordinador', 'activities.responsables']);
 
         if (isset($filters['fecha_inicio'])) {
             $query->where('fecha_inicio', '>=', $filters['fecha_inicio']);

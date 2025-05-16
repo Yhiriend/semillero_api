@@ -3,51 +3,57 @@
 namespace App\Modules\Projects\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Modules\Projects\Models\HotbedModel;
+use App\Modules\Projects\Models\UserModel;
+use App\Modules\Projects\Models\UniversityModel;
 
 class ProjectModel extends Model
 {
-    protected $table = 'Proyecto';
-    protected $primaryKey = 'id';
-    protected $fillable = [
-        'titulo',
-        'descripcion',
-        'semillero_id',
-        'coordinador_id',
-        'estado',
-        'fecha_inicio',
-        'fecha_fin',
-        'fecha_creacion',
-        'fecha_actualizacion',
-    ];
+    use HasFactory;
 
+    // Desactivar timestamps por defecto
+    public $timestamps = false;
+
+    // Definir las columnas de timestamps personalizadas
     const CREATED_AT = 'fecha_creacion';
     const UPDATED_AT = 'fecha_actualizacion';
 
-    public function seedbed(): BelongsTo
+    protected $table = 'proyecto';
+
+    protected $fillable = [
+        'titulo',
+        'descripcion',
+        'estado',
+        'fecha_inicio',
+        'fecha_fin',
+        'semillero_id',
+        'lider_id',
+        'coordinador_id'
+    ];
+
+    public function hotbet()
     {
-        return $this->belongsTo(\App\Modules\Seedbeds\Models\SeedbedModel::class, 'semillero_id');
+        return $this->belongsTo(HotbedModel::class, 'semillero_id');
     }
 
-    public function coordinator(): BelongsTo
+    public function leader()
     {
-        return $this->belongsTo(\App\Modules\Users\Models\UserModel::class, 'coordinador_id');
+        return $this->belongsTo(UserModel::class, 'lider_id');
     }
 
-    public function leader(): BelongsTo
+    public function coordinator()
     {
-        return $this->belongsTo(\App\Modules\Users\Models\UserModel::class, 'lider_id');
+        return $this->belongsTo(UserModel::class, 'coordinador_id');
     }
 
-    public function events(): BelongsToMany
+    public function students()
     {
-        return $this->belongsToMany(
-            \App\Modules\Events\Models\EventModel::class,
-            'Proyecto_Evento',
-            'proyecto_id',
-            'evento_id'
-        );
+        return $this->belongsToMany(UserModel::class, 'proyecto_usuario', 'proyecto_id', 'usuario_id');
+    }
+
+    public function university()
+    {
+        return $this->belongsTo(UniversityModel::class, 'universidad_id');
     }
 }
