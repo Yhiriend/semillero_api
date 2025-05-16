@@ -27,7 +27,7 @@ class ProjectUniversityResource extends JsonResource
             'fecha_creacion' => $this->fecha_creacion,
             'fecha_actualizacion' => $this->fecha_actualizacion,
             'university' => new ProjectUniversityResource($this->whenLoaded('university')),
-            'hotbet' => $this->whenLoaded('hotbet'),
+            'semillero' => $this->whenLoaded('hotbet'),
         ];
     }
 }
