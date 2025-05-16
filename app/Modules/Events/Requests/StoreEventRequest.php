@@ -1,16 +1,11 @@
 <?php
 
 namespace App\Modules\Events\Requests;
-use Illuminate\Foundation\Http\FormRequest;
 
-class StoreEventRequest extends FormRequest
+use App\Http\Requests\BaseRequest;
+
+class StoreEventRequest extends BaseRequest
 {
-    public function authorize()
-    {
-        return true;
-        //return auth()->user()->hasAnyRole(['Administrador', 'Coordinador de Eventos']);
-    }
-
     public function rules(): array
     {
         return [
