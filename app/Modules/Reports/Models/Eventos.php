@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 use App\Modules\Reports\Models\Proyecto;
-use App\Modules\Users\Models\UserModel;
+use App\Modules\Reports\Models\Usuario;
 
 class Eventos extends Model
 {
@@ -35,7 +35,7 @@ class Eventos extends Model
 
     public function coordinador(): BelongsTo
     {
-        return $this->belongsTo(\App\Modules\Users\Models\UserModel::class, 'coordinador_id');
+        return $this->belongsTo(\App\Modules\Reports\Models\Usuario::class, 'coordinador_id');
     }
 
     public function activities(): HasMany
@@ -50,7 +50,7 @@ class Eventos extends Model
     public function projects(): BelongsToMany
     {
         return $this->belongsToMany(
-            \App\Modules\Projects\Models\ProjectModel::class,
+            \App\Modules\Reports\Models\Proyecto::class,
             'Proyecto_Evento',
             'evento_id',
             'proyecto_id'
@@ -70,7 +70,7 @@ class Eventos extends Model
 
     public function registeredUsers()
     {
-        return UserModel::select([
+        return Usuario::select([
                 'usuario.*',
                 'proyecto.id as proyecto_id',
                 'proyecto.titulo as proyecto_titulo',
