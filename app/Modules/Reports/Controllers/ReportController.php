@@ -7,8 +7,9 @@ use Illuminate\Support\Facades\Response;
 
 
 use App\Http\Controllers\Controller;
-use App\Modules\Projects\Models\ProjectModel;
+use App\Modules\Reports\Models\Proyecto;
 use App\Modules\Reports\Services\CertificateService;
+use App\Modules\Reports\Services\EventService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -31,7 +32,7 @@ class ReportController extends Controller
      */
     public function getProjectsWithAuthors(): JsonResponse
     {
-        $projects = ProjectModel::with([
+        $projects = Proyecto::with([
             'autores:id,nombre,email,tipo',
             'lider:id,nombre,email,tipo',
             'coordinador:id,nombre,email,tipo'
@@ -48,24 +49,29 @@ class ReportController extends Controller
      */
     public function generateCertificate(Request $request)
     {
-        $data = $request->all();
-        // Valores por defecto para evitar errores de variables indefinidas
-        $defaults = [
-            'autor'      => 'Nombre del estudiante',
-            'documento'  => '00000000',
-            'expedida'   => 'Ciudad',
-            'semestre'   => 'I',
-            'programa'   => 'Programa académico',
-            'periodo'    => '2024-1',
-            'porcentaje' => '100%',
-            'fecha'      => now()->locale('es')->isoFormat('LL'),
-            'codigo'     => strtoupper(substr(md5(uniqid(rand(), true)), 0, 10)),
+        // Validar los datos requeridos antes de continuar
+        $request->validate([
+            'autor'     => 'required|integer|exists:Usuario,id',
+            'documento' => 'required|string',
+            'expedida'  => 'required|string',
+            'semillero' => 'required|integer|exists:Semillero,id',
+        ]);
+    
+        // Solo pasamos los datos base, lo demás lo resuelve el service
+        $data = [
+            'autor'     => $request->input('autor'),
+            'documento' => $request->input('documento'),
+            'expedida'  => $request->input('expedida'),
+            'semillero' => $request->input('semillero'),
         ];
-        $data = array_merge($defaults, $data);
-
+    
+        // Llama al service para generar el PDF
         $pdf = $this->certificateService->generateParticipationCertificate($data);
+    
+        // Retorna el PDF como descarga
         return $pdf->download('certificado-participacion.pdf');
     }
+    
 
     public function getEventReport(Request $request, int $eventoId): JsonResponse
 {
@@ -176,4 +182,27 @@ public function getProjectScores(Request $request): JsonResponse
             'actividades' => $actividades
         ]);
     }
+
+    public function show($proyectoId, $eventoId)
+    {
+        $certificado = $this->certificateService->generarCertificado($proyectoId, $eventoId);
+
+        if (!$certificado) {
+            return response()->json([
+                'message' => 'No hay evaluaciones completadas para este proyecto en el evento.'
+            ], 404);
+        }
+
+        return response()->json([
+            'proyecto' => $certificado->proyecto->titulo,
+            'evento' => $certificado->evento->nombre,
+            'promedio_puntuacion' => $certificado->promedioPuntaje,
+            'evaluaciones' => array_map(fn($eval) => [
+                'evaluador_id' => $eval->evaluador_id,
+                'puntuacion' => $eval->puntuacion,
+                'comentarios' => $eval->comentarios,
+            ], $certificado->evaluaciones),
+        ]);
+    }
+
 }

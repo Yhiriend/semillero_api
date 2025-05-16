@@ -152,7 +152,7 @@
     <div class="main-title">EL COORDINADOR DE EVENTOS Y ADMINISTRACIÓN DE PROYECTOS</div>
     <div class="cert-title">CERTIFICA</div>
     <div class="cert-body">
-        Que <b>{{ $autor }}</b> identificado(a) con CC Número <b>{{ $documento }}</b> Expedida en <b>{{ $expedida }}</b> ha participado en el semillero de investigación '<b>{{ $semillero }}</b>' con el proyecto titulado '<b>{{ $proyecto }}</b>', demostrando un alto nivel de compromiso y dedicación.
+        Que <b>{{ $autor1 }}</b> identificado(a) con CC Número <b>{{ $documento }}</b> Expedida en <b>{{ $expedida }}</b> ha participado en el semillero de investigación '<b>{{ $semillero1 }}</b>' con el proyecto titulado '<b>{{ $proyecto }}</b>', demostrando un alto nivel de compromiso y dedicación.
     </div>
 
     <div class="firma">

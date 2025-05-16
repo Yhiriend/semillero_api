@@ -7,7 +7,9 @@ use Illuminate\Support\Facades\Route;
 use App\Modules\Authentication\Controllers\AuthController;
 use App\Modules\Reports\Controllers\ReportController;
 use App\Modules\Reports\Controllers\EvaluatorController;
+use App\Modules\Reports\Controllers\SemilleroController;
 use App\Modules\Evaluations\Controllers\EvaluationController;
+use App\Modules\Reports\Controllers\EventosController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -22,28 +24,21 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::middleware('auth:api')->group(function () {
-    Route::prefix('reports')->group(function () {
-        Route::get('projects-with-authors', [ReportController::class, 'getProjectsWithAuthors']);
-        Route::post('generate-certificate', [ReportController::class, 'generateCertificate']);
-        Route::get('evaluators', [EvaluatorController::class, 'index']);
-        Route::get('events/{eventId}/registered-users', [EventController::class, 'getRegisteredUsers']);
-        Route::get('/report/event/{eventoId}', [ReportController::class, 'getEventReport']);
-        Route::get('/report/project-scores', [ReportController::class, 'getProjectScores']);
-        Route::get('/actividades', [ReportController::class, 'consultarActividades']);
-        Route::get('/evento/{eventoId}/certificados', [ReportController::class, 'generarCertificadosEvento']); 
-    });
+
+});
+Route::prefix('reports')->group(function () {
+    Route::get('projects-with-authors', [ReportController::class, 'getProjectsWithAuthors']);
+    Route::post('generate-certificate', [ReportController::class, 'generateCertificate']);
+    Route::get('evaluators', [EvaluatorController::class, 'index']);
+    Route::get('events/{eventId}/registered-users', [EventosController::class, 'getRegisteredUsers']);
+    Route::get('/event/{eventoId}', [ReportController::class, 'getEventReport']);
+    Route::get('/project-scores', [ReportController::class, 'getProjectScores']);
+    Route::get('/activity', [ReportController::class, 'consultarActividades']);
+    Route::get('/event/{eventoId}/certificados', [ReportController::class, 'generarCertificadosEvento']); 
+    Route::get('/certificados/{proyectoId}/{eventoId}', [ReportController::class, 'show']);
+    Route::get('/semilleros/estructura', [SemilleroController::class, 'index']);
 });
 
-Route::middleware('auth:api')->group(function () {
-    Route::prefix('reports')->group(function () {
-        Route::get('projects-with-authors', [ReportController::class, 'getProjectsWithAuthors']);
-        Route::post('generate-certificate', [ReportController::class, 'generateCertificate']);
-        Route::get('evaluators', [EvaluatorController::class, 'index']);
-        Route::get('events/{eventId}/registered-users', [EventController::class, 'getRegisteredUsers']);
-        Route::get('/actividades', [ReportController::class, 'consultarActividades']);
-        Route::get('/evento/{eventoId}/certificados', [ReportController::class, 'generarCertificadosEvento']); 
-    });
-});
 
 
 Route::prefix('events')->middleware(['auth:api', 'roles:Coordinador de Eventos'])->group(function () {

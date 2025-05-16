@@ -118,12 +118,4 @@ class EventController extends Controller
         }
     }
 
-    public function getRegisteredUsers(int $eventId): JsonResponse
-    {
-        try {
-            return $this->eventService->getRegisteredUsers($eventId);
-        } catch (\Exception $e) {
-            return $this->errorResponse('Error al obtener los usuarios inscritos: ' . $e->getMessage());
-        }
-    }
 }
