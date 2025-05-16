@@ -13,43 +13,69 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Traits\ApiResponse;
 
 /**
+ * @OA\Tag(
+ *     name="Eventos",
+ *     description="Endpoints para gestionar eventos"
+ * )
+ * 
  * @OA\Schema(
  *     schema="EventResource",
  *     type="object",
- *     @OA\Property(property="id", type="integer"),
- *     @OA\Property(property="name", type="string"),
- *     @OA\Property(property="description", type="string"),
- *     @OA\Property(property="start_date", type="string", format="date-time"),
- *     @OA\Property(property="end_date", type="string", format="date-time"),
- *     @OA\Property(property="location", type="string"),
- *     @OA\Property(property="coordinador_id", type="integer"),
+ *     @OA\Property(property="id", type="integer", description="ID del evento"),
+ *     @OA\Property(property="nombre", type="string", description="Nombre del evento"),
+ *     @OA\Property(property="descripcion", type="string", nullable=true, description="Descripción del evento"),
+ *     @OA\Property(property="fecha_inicio", type="string", format="date-time", description="Fecha y hora de inicio del evento"),
+ *     @OA\Property(property="fecha_fin", type="string", format="date-time", description="Fecha y hora de fin del evento"),
+ *     @OA\Property(property="ubicacion", type="string", nullable=true, description="Ubicación del evento"),
+ *     @OA\Property(property="coordinador_id", type="integer", description="ID del coordinador del evento"),
  *     @OA\Property(
  *         property="coordinador",
  *         type="object",
- *         @OA\Property(property="id", type="integer"),
- *         @OA\Property(property="name", type="string")
+ *         description="Información del coordinador",
+ *         @OA\Property(property="id", type="integer", description="ID del coordinador"),
+ *         @OA\Property(property="nombre", type="string", description="Nombre del coordinador")
  *     )
  * )
  * 
  * @OA\Schema(
  *     schema="StoreEventRequest",
- *     required={"name", "start_date", "end_date"},
- *     @OA\Property(property="name", type="string", maxLength=255),
- *     @OA\Property(property="description", type="string", nullable=true),
- *     @OA\Property(property="start_date", type="string", format="date-time"),
- *     @OA\Property(property="end_date", type="string", format="date-time"),
- *     @OA\Property(property="location", type="string", maxLength=255, nullable=true),
- *     @OA\Property(property="coordinador_id", type="integer")
+ *     required={"nombre", "fecha_inicio", "fecha_fin", "coordinador_id"},
+ *     @OA\Property(property="nombre", type="string", maxLength=255, description="Nombre del evento"),
+ *     @OA\Property(property="descripcion", type="string", nullable=true, description="Descripción del evento"),
+ *     @OA\Property(property="fecha_inicio", type="string", format="date-time", description="Fecha y hora de inicio del evento"),
+ *     @OA\Property(property="fecha_fin", type="string", format="date-time", description="Fecha y hora de fin del evento"),
+ *     @OA\Property(property="ubicacion", type="string", maxLength=255, nullable=true, description="Ubicación del evento"),
+ *     @OA\Property(property="coordinador_id", type="integer", description="ID del coordinador del evento")
  * )
  * 
  * @OA\Schema(
  *     schema="UpdateEventRequest",
- *     @OA\Property(property="name", type="string", maxLength=255),
- *     @OA\Property(property="description", type="string", nullable=true),
- *     @OA\Property(property="start_date", type="string", format="date-time"),
- *     @OA\Property(property="end_date", type="string", format="date-time"),
- *     @OA\Property(property="location", type="string", maxLength=255, nullable=true),
- *     @OA\Property(property="coordinador_id", type="integer")
+ *     @OA\Property(property="nombre", type="string", maxLength=255, description="Nombre del evento"),
+ *     @OA\Property(property="descripcion", type="string", nullable=true, description="Descripción del evento"),
+ *     @OA\Property(property="fecha_inicio", type="string", format="date-time", description="Fecha y hora de inicio del evento"),
+ *     @OA\Property(property="fecha_fin", type="string", format="date-time", description="Fecha y hora de fin del evento"),
+ *     @OA\Property(property="ubicacion", type="string", maxLength=255, nullable=true, description="Ubicación del evento"),
+ *     @OA\Property(property="coordinador_id", type="integer", description="ID del coordinador del evento")
+ * )
+ * 
+ * @OA\Schema(
+ *     schema="ErrorResponse",
+ *     @OA\Property(property="status", type="boolean", example=false),
+ *     @OA\Property(property="message", type="string", example="Error al procesar la solicitud")
+ * )
+ * 
+ * @OA\Schema(
+ *     schema="ValidationErrorResponse",
+ *     @OA\Property(property="status", type="boolean", example=false),
+ *     @OA\Property(property="message", type="string", example="Errores de validación"),
+ *     @OA\Property(
+ *         property="errors",
+ *         type="object",
+ *         @OA\AdditionalProperties(
+ *             type="array",
+ *             @OA\Items(type="string")
+ *         )
+ *     )
  * )
  */
 class EventController extends Controller
@@ -70,14 +96,14 @@ class EventController extends Controller
      *     @OA\Parameter(
      *         name="fecha_inicio",
      *         in="query",
-     *         description="Fecha de inicio para filtrar eventos",
+     *         description="Fecha de inicio para filtrar eventos (formato YYYY-MM-DD)",
      *         required=false,
      *         @OA\Schema(type="string", format="date")
      *     ),
      *     @OA\Parameter(
      *         name="fecha_fin",
      *         in="query",
-     *         description="Fecha de fin para filtrar eventos",
+     *         description="Fecha de fin para filtrar eventos (formato YYYY-MM-DD)",
      *         required=false,
      *         @OA\Schema(type="string", format="date")
      *     ),
@@ -112,6 +138,14 @@ class EventController extends Controller
     {
         try {
             $events = $this->eventService->getFilteredEvents($request->validated());
+
+            if ($events->isEmpty()) {
+                return $this->errorResponse(
+                    'No se encontraron eventos con los filtros proporcionados',
+                    404
+                );
+            }
+
             return $this->successResponse(
                 EventResource::collection($events),
                 'Listado de eventos obtenido correctamente'
@@ -148,7 +182,7 @@ class EventController extends Controller
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Error de validación",
+     *         description="Errores de validación",
      *         @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")
      *     ),
      *     @OA\Response(
@@ -179,7 +213,7 @@ class EventController extends Controller
      * @OA\Get(
      *     path="/api/events/{id}",
      *     tags={"Eventos"},
-     *     summary="Obtener un evento específico",
+     *     summary="Obtener detalles de un evento",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
@@ -269,7 +303,7 @@ class EventController extends Controller
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Error de validación",
+     *         description="Errores de validación",
      *         @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")
      *     ),
      *     @OA\Response(
