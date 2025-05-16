@@ -7,6 +7,8 @@ use App\Modules\Faculties\Controllers\FacultyController;
 use App\Modules\Universities\Controllers\UniversityController;
 use Illuminate\Support\Facades\Route;
 use App\Modules\Authentication\Controllers\AuthController;
+use App\Modules\Projects\Controllers\ProjectController;
+
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -52,4 +54,16 @@ Route::prefix('faculties')->middleware(['auth:api', 'roles:Administrador'])->gro
     Route::get('/{faculty}', [FacultyController::class, 'show']);
     Route::put('/{faculty}', [FacultyController::class, 'update']);
     Route::delete('/{faculty}', [FacultyController::class, 'destroy']);
+});
+
+
+Route::prefix('projects')->group(function () {
+    Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->get('/', [ProjectController::class, 'getAllProjects'])->name('projects.getAllProjects');
+    Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->get('/{id}', [ProjectController::class, 'getProjectById'])->name('projects.getProjectById');
+    
+    Route::middleware(['auth:api', 'roles:Lider de Proyecto,Administrador'])->post('/{id}', [ProjectController::class, 'storeProject'])->name('projects.storeProject');
+    Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->post('/{id}/asignar-estudiantes', [ProjectController::class, 'assignStudentToProject']);
+    
+    Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->put('/{id}/status', [ProjectController::class, 'updateStatus'])->name('projects.updateStatus');
+    Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->put('/{id}', [ProjectController::class, 'updateProject'])->name('projects.updateProject');
 });
