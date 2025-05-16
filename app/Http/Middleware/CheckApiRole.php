@@ -46,11 +46,9 @@ class CheckApiRole
         $result = [];
 
         foreach ($roles as $role) {
-            foreach (explode(',', $role) as $r) {
-                $cleanRole = trim($r, " \"'");
-                if (!empty($cleanRole)) {
-                    $result[] = (int) $cleanRole; 
-                }
+            $cleanRole = trim($role, '"\'');
+            if (!empty($cleanRole)) {
+                $result[] = $cleanRole;
             }
         }
 
