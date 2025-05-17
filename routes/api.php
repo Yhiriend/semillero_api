@@ -1,6 +1,6 @@
 <?php
 
-use App\Modules\Activities\Controllers\ActivityController;
+use App\Modules\Evaluations\Controllers\EvaluationController;
 use App\Modules\Events\Controllers\EventController;
 use App\Modules\Events\Controllers\ProjectEventController;
 use App\Modules\Faculties\Controllers\FacultyController;
@@ -22,7 +22,7 @@ Route::prefix('auth')->group(function () {
 });
 
 
-Route::prefix('events')->middleware(['auth:api', 'roles:Coordinador de Eventos'])->group(function () {
+Route::prefix('events')->middleware(['auth:api', 'roles:Coordinador de Eventos,Administrador'])->group(function () {
 
     Route::get('/', [EventController::class, 'index']);
     Route::post('/', [EventController::class, 'store']);
@@ -59,19 +59,15 @@ Route::prefix('faculties')->middleware(['auth:api', 'roles:Administrador'])->gro
 Route::prefix('projects')->group(function () {
     Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->get('/', [ProjectController::class, 'getAllProjects'])->name('projects.getAllProjects');
     Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->get('/{id}', [ProjectController::class, 'getProjectById'])->name('projects.getProjectById');
-    
+
     Route::middleware(['auth:api', 'roles:Lider de Proyecto,Administrador'])->post('/{id}', [ProjectController::class, 'storeProject'])->name('projects.storeProject');
     Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->post('/{id}/asignar-estudiantes', [ProjectController::class, 'assignStudentToProject']);
-    
+
     Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->put('/{id}/status', [ProjectController::class, 'updateStatus'])->name('projects.updateStatus');
     Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->put('/{id}', [ProjectController::class, 'updateProject'])->name('projects.updateProject');
 
 });
 
-
-
-
- feature/evaluation-management
 Route::prefix('evaluations')->group(function () {
     Route::get('/', [EvaluationController::class, 'index']);
     Route::post('/', [EvaluationController::class, 'store']);
@@ -101,5 +97,4 @@ Route::prefix('evaluations')->group(function () {
     Route::get('/dashboard/stats', [EvaluationController::class, 'dashboardStats']);
     Route::get('/event/{eventId}/report', [EvaluationController::class, 'generateReport']);
     Route::get('/event/{eventId}/unevaluated-projects', [EvaluationController::class, 'unevaluatedProjects']);
-  
-  });
+});
