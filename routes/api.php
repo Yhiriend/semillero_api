@@ -8,6 +8,7 @@ use App\Modules\Universities\Controllers\UniversityController;
 use Illuminate\Support\Facades\Route;
 use App\Modules\Authentication\Controllers\AuthController;
 use App\Modules\Projects\Controllers\ProjectController;
+use App\Modules\Users\Controllers\UserController;
 
 
 Route::prefix('auth')->group(function () {
@@ -22,6 +23,13 @@ Route::prefix('auth')->group(function () {
     });
 });
 
+Route::prefix('users')->middleware(['auth:api', 'roles:Administrador'])->group(function () {
+    Route::get('/', [UserController::class, 'index']);
+    Route::post('/', [UserController::class, 'store']);
+    Route::get('/{id}', [UserController::class, 'show']);
+    Route::put('/{id}', [UserController::class, 'update']);
+    Route::delete('/{id}', [UserController::class, 'destroy']);
+});
 
 Route::prefix('events')->middleware(['auth:api', 'roles:Coordinador de Eventos,Administrador'])->group(function () {
 

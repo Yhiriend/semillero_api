@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
+use App\Modules\Authentication\Requests\RegisterRequest;
+use App\Modules\Authentication\Requests\LoginRequest;
 
 /**
  * @OA\Tag(
@@ -68,19 +70,13 @@ class AuthController
      *     )
      * )
      */
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
         try {
-            $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:usuario,email',
-                'password' => 'required|string|min:6|confirmed',
-                'tipo' => 'required|string|in:estudiante,profesor,administrador',
-                'programa_id' => 'nullable|integer|exists:programa,id',
-                'rol' => 'required|integer|exists:rol,id',
-            ]);
-
-            $data = $request->all();
+            $data = $request->validated();
+            $data['name'] = $data['nombre'];
+            $data['password'] = $data['contraseña'];
+            unset($data['nombre'], $data['contraseña']);
             $rolId = $data['rol'];
             unset($data['rol']);
 
@@ -103,7 +99,7 @@ class AuthController
             }
 
             return $this->successResponse($result, 'Usuario registrado correctamente', 201);
-        } catch (ValidationException $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
             return $this->validationErrorResponse($e->errors());
         } catch (\Exception $e) {
             return $this->errorResponse('Error al registrar el usuario: ' . $e->getMessage(), 500);
@@ -143,15 +139,13 @@ class AuthController
      *     )
      * )
      */
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
         try {
-            $request->validate([
-                'email' => 'required|email',
-                'password' => 'required|string',
-            ]);
-
-            $result = $this->authService->login($request->email, $request->password);
+            $data = $request->validated();
+            $email = $data['email'];
+            $password = $data['contraseña'];
+            $result = $this->authService->login($email, $password);
             return $this->successResponse($result, 'Login exitoso');
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e->errors());
