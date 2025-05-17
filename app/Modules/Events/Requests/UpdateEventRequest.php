@@ -2,16 +2,10 @@
 
 namespace App\Modules\Events\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\BaseRequest;
 
-class UpdateEventRequest extends FormRequest
+class UpdateEventRequest extends BaseRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-        //return auth()->user()->hasAnyRole(['Administrador', 'Coordinador de Eventos']);
-    }
-
     public function rules(): array
     {
         return [

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Users\Models;
 
+use App\Modules\Evaluations\Models\EvaluationModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -148,5 +149,10 @@ class UserModel extends Authenticatable implements JWTSubject
     public function hasExactRole($role): bool
     {
         return $this->roles()->where('nombre', $role)->exists();
+    }
+
+    public function evaluaciones()
+    {
+        return $this->hasMany(EvaluationModel::class, 'evaluador_id');
     }
 }

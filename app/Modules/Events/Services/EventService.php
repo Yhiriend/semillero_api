@@ -6,9 +6,13 @@ use App\Modules\Events\Repositories\EventRepository;
 use App\Modules\Events\Models\EventModel;
 use App\Modules\Activities\Models\ActivityModel;
 use Illuminate\Support\Facades\DB;
+use App\Traits\ApiResponse;
 
 class EventService
 {
+
+    use ApiResponse;
+    
     public function __construct(
         protected EventRepository $eventRepository
     ) {}
@@ -79,4 +83,5 @@ class EventService
 
         $this->eventRepository->delete($event);
     }
+
 }
