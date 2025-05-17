@@ -1,9 +1,11 @@
 <?php
 
 use App\Modules\Evaluations\Controllers\EvaluationController;
+use App\Modules\Activities\Controllers\ActivityController;
 use App\Modules\Events\Controllers\EventController;
 use App\Modules\Events\Controllers\ProjectEventController;
 use App\Modules\Faculties\Controllers\FacultyController;
+use App\Modules\Programs\Controllers\ProgramController;
 use App\Modules\Universities\Controllers\UniversityController;
 use Illuminate\Support\Facades\Route;
 use App\Modules\Authentication\Controllers\AuthController;
@@ -31,13 +33,23 @@ Route::prefix('users')->middleware(['auth:api', 'roles:Administrador'])->group(f
     Route::delete('/{id}', [UserController::class, 'destroy']);
 });
 
-Route::prefix('events')->middleware(['auth:api', 'roles:Coordinador de Eventos,Administrador'])->group(function () {
+Route::prefix('events')->middleware(['auth:api', 'roles:Coordinador de Eventos'])->group(function () {
 
     Route::get('/', [EventController::class, 'index']);
     Route::post('/', [EventController::class, 'store']);
     Route::get('/{event}', [EventController::class, 'show']);
     Route::put('/{event}', [EventController::class, 'update']);
     Route::delete('/{event}', [EventController::class, 'destroy']);
+
+
+    Route::prefix('{event}/activities')->group(function () {
+        Route::get('/', [ActivityController::class, 'index']);
+        Route::post('/', [ActivityController::class, 'store']);
+        Route::get('/{activity}', [ActivityController::class, 'show']);
+        Route::put('/{activity}', [ActivityController::class, 'update']);
+        Route::delete('/{activity}', [ActivityController::class, 'destroy']);
+        Route::post('/{activity}/assign-responsables', [ActivityController::class, 'assignResponsables']);
+    });
 
     Route::prefix('{event}/projects')->group(function () {
         Route::get('/', [ProjectEventController::class, 'index']);
@@ -62,6 +74,14 @@ Route::prefix('faculties')->middleware(['auth:api', 'roles:Administrador'])->gro
     Route::get('/{faculty}', [FacultyController::class, 'show']);
     Route::put('/{faculty}', [FacultyController::class, 'update']);
     Route::delete('/{faculty}', [FacultyController::class, 'destroy']);
+});
+
+Route::prefix('programs')->middleware(['auth:api', 'roles:Administrador'])->group(function () {
+    Route::get('/', [ProgramController::class, 'index']);
+    Route::post('/', [ProgramController::class, 'store']);
+    Route::get('/{program}', [ProgramController::class, 'show']);
+    Route::put('/{program}', [ProgramController::class, 'update']);
+    Route::delete('/{program}', [ProgramController::class, 'destroy']);
 });
 
 

@@ -127,7 +127,7 @@ class UserModel extends Authenticatable implements JWTSubject
      */
     public function programa()
     {
-        return $this->belongsTo(\App\Modules\Programas\Models\ProgramaModel::class, 'programa_id');
+        return $this->belongsTo(\App\Modules\Programs\Models\ProgramModel::class, 'programa_id');
     }
 
     public function roles()
