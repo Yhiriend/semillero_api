@@ -7,13 +7,13 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Exception;
 use Illuminate\Support\Facades\Log;
-use App\Modules\Reports\Models\Usuario;
-use App\Modules\Reports\Models\Semillero;
-use App\Modules\Reports\Models\SemilleroUsuario;
-use App\Modules\Reports\Models\Proyecto;
-use App\Modules\Reports\Models\Eventos;
-use App\Modules\Reports\Models\Certificado;
-use App\Modules\Reports\Models\Evaluaciones;
+use App\Modules\Users\Models\UserModel;
+use App\Modules\Reports\Models\SeedbedModel;
+use App\Modules\Reports\Models\SeedbedUserModel;
+use App\Modules\Projects\Models\ProjectModel;
+use App\Modules\Events\Models\EventModel;
+use App\Modules\Reports\Models\CertificateModel;
+use App\Modules\Evaluations\Models\EvaluationModel;
 
 use Illuminate\Support\Facades\DB;
 
@@ -26,17 +26,17 @@ class CertificateService
      * @return string
      * @throws Exception
      */
-    public function generateParticipationCertificate(array $data)
+    public function generateParticipationCertificate(array $data): string
     {
         try {
             // Validar existencia del usuario
-            $usuario = Usuario::find($data['autor']);
+            $usuario = UserModel::find($data['autor']);
             if (!$usuario) {
                 throw new \Exception('Usuario no encontrado.');
             }
     
             // Validar que esté inscrito en el semillero
-            $registro = SemilleroUsuario::where('usuario_id', $usuario->id)
+            $registro = SeedbedUserModel::where('usuario_id', $usuario->id)
                 ->where('semillero_id', $data['semillero'])
                 ->first();
     
@@ -45,13 +45,13 @@ class CertificateService
             }
     
             // Obtener nombre del semillero
-            $semillero = Semillero::find($data['semillero']);
+            $semillero = SeedbedModel::find($data['semillero']);
             if (!$semillero) {
                 throw new \Exception('Semillero no encontrado.');
             }
     
             // Obtener proyecto relacionado al semillero
-            $proyecto = Proyecto::where('semillero_id', $semillero->id)->first();
+            $proyecto = ProjectModel::where('semillero_id', $semillero->id)->first();
             if (!$proyecto) {
                 throw new \Exception('No hay proyecto asociado al semillero.');
             }
@@ -82,9 +82,17 @@ class CertificateService
     
             // Guardar el PDF
             $fileName = 'certificado_' . time() . '.pdf';
-            Storage::disk('local')->put('certificates/' . $fileName, $pdf->output());
+            $filePath = storage_path('app/certificates/' . $fileName);
+            
+            // Asegurarse de que el directorio existe
+            if (!file_exists(storage_path('app/certificates'))) {
+                mkdir(storage_path('app/certificates'), 0755, true);
+            }
+            
+            // Guardar el PDF
+            $pdf->save($filePath);
     
-            return $pdf;
+            return $filePath;
     
         } catch (\Exception $e) {
             Log::error('Error generando certificado: ' . $e->getMessage());
@@ -158,7 +166,7 @@ class CertificateService
         return DB::select($sql);
     }
 
-    public function generarCertificado(int $proyectoId, int $eventoId): ?Certificado
+    public function generarCertificado(int $proyectoId, int $eventoId): ?CertificateModel
     {
         // Validamos que el proyecto esté inscrito en el evento
         $inscripcion = DB::table('proyecto_evento')
@@ -170,11 +178,11 @@ class CertificateService
             return null;
         }
     
-        $proyecto = Proyecto::findOrFail($proyectoId);
-        $evento = Eventos::findOrFail($eventoId);
+        $proyecto = ProjectModel::findOrFail($proyectoId);
+        $evento = EventModel::findOrFail($eventoId);
     
         // Obtenemos evaluaciones completadas del proyecto
-        $evaluaciones = Evaluaciones::where('proyecto_id', $proyectoId)
+        $evaluaciones = EvaluationModel::where('proyecto_id', $proyectoId)
             ->where('estado', 'completada')
             ->get()
             ->all();
@@ -183,7 +191,7 @@ class CertificateService
             return null;
         }
     
-        return new Certificado($proyecto, $evento, $evaluaciones);
+        return new CertificateModel($proyecto, $evento, $evaluaciones);
     }
     
 } 

@@ -4,8 +4,10 @@ namespace App\Modules\Reports\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Modules\Users\Models\UserModel;
+use App\Modules\Projects\Models\ProjectModel;
 
-class Semillero extends Model
+class SeedbedModel extends Model
 {
     use HasFactory;
 
@@ -22,14 +24,14 @@ class Semillero extends Model
         'fecha_actualizacion'
     ];
 
-    public function usuarios()
+    public function users()
     {
-        return $this->belongsToMany(Usuario::class, 'Semillero_Usuario', 'semillero_id', 'usuario_id')
+        return $this->belongsToMany(UserModel::class, 'Semillero_Usuario', 'semillero_id', 'usuario_id')
                     ->withTimestamps();
     }
 
-    public function proyectos()
+    public function projects()
     {
-        return $this->hasMany(Proyecto::class, 'semillero_id');
+        return $this->hasMany(ProjectModel::class, 'semillero_id');
     }
-}
+} 
