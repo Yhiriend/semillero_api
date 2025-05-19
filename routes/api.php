@@ -1,7 +1,6 @@
 <?php
 
 use App\Modules\Evaluations\Controllers\EvaluationController;
-use App\Modules\Activities\Controllers\ActivityController;
 use App\Modules\Events\Controllers\EventController;
 use App\Modules\Events\Controllers\ProjectEventController;
 use App\Modules\Faculties\Controllers\FacultyController;
@@ -11,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 use App\Modules\Authentication\Controllers\AuthController;
 use App\Modules\Projects\Controllers\ProjectController;
 use App\Modules\Users\Controllers\UserController;
+use App\Modules\Reports\Controllers\ReportController;
 
 
 Route::prefix('auth')->group(function () {
@@ -40,16 +40,6 @@ Route::prefix('events')->middleware(['auth:api', 'roles:Coordinador de Eventos']
     Route::get('/{event}', [EventController::class, 'show']);
     Route::put('/{event}', [EventController::class, 'update']);
     Route::delete('/{event}', [EventController::class, 'destroy']);
-
-
-    Route::prefix('{event}/activities')->group(function () {
-        Route::get('/', [ActivityController::class, 'index']);
-        Route::post('/', [ActivityController::class, 'store']);
-        Route::get('/{activity}', [ActivityController::class, 'show']);
-        Route::put('/{activity}', [ActivityController::class, 'update']);
-        Route::delete('/{activity}', [ActivityController::class, 'destroy']);
-        Route::post('/{activity}/assign-responsables', [ActivityController::class, 'assignResponsables']);
-    });
 
     Route::prefix('{event}/projects')->group(function () {
         Route::get('/', [ProjectEventController::class, 'index']);
@@ -126,4 +116,25 @@ Route::prefix('evaluations')->group(function () {
     Route::get('/dashboard/stats', [EvaluationController::class, 'dashboardStats']);
     Route::get('/event/{eventId}/report', [EvaluationController::class, 'generateReport']);
     Route::get('/event/{eventId}/unevaluated-projects', [EvaluationController::class, 'unevaluatedProjects']);
+});
+
+Route::prefix('reports')->middleware(['auth:api'])->group(function () {
+    // Certificate routes
+    Route::prefix('certificates')->group(function () {
+        Route::post('/generate', [ReportController::class, 'generateCertificate']);
+        Route::get('/event/{eventId}/generate-all', [ReportController::class, 'generarCertificadosEvento']);
+        Route::get('/project/{projectId}/event/{eventId}', [ReportController::class, 'show']);
+    });
+
+    // Event reports
+    Route::prefix('events')->group(function () {
+        Route::get('/{eventId}/report', [ReportController::class, 'getEventReport']);
+        Route::get('/{eventId}/activities', [ReportController::class, 'consultarActividades']);
+    });
+
+    // Project reports
+    Route::prefix('projects')->group(function () {
+        Route::get('/with-authors', [ReportController::class, 'getProjectsWithAuthors']);
+        Route::get('/scores', [ReportController::class, 'getProjectScores']);
+    });
 });
