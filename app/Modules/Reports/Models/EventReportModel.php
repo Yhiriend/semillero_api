@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-
-use App\Modules\Reports\Models\Proyecto;
 use App\Modules\Users\Models\UserModel;
+use App\Modules\Projects\Models\ProjectModel;
+use App\Modules\Activities\Models\ActivityModel;
 
-class Eventos extends Model
+class EventReportModel extends Model
 {
     protected $table = 'Evento';
     protected $primaryKey = 'id';
@@ -33,39 +33,24 @@ class Eventos extends Model
     const CREATED_AT = 'fecha_creacion';
     const UPDATED_AT = 'fecha_actualizacion';
 
-    public function coordinador(): BelongsTo
+    public function coordinator(): BelongsTo
     {
-        return $this->belongsTo(\App\Modules\Users\Models\UserModel::class, 'coordinador_id');
+        return $this->belongsTo(UserModel::class, 'coordinador_id');
     }
 
     public function activities(): HasMany
     {
-        return $this->hasMany(
-            \App\Modules\Activities\Models\ActivityModel::class,
-            'evento_id',
-            'id'
-        );
+        return $this->hasMany(ActivityModel::class, 'evento_id', 'id');
     }
 
     public function projects(): BelongsToMany
     {
         return $this->belongsToMany(
-            \App\Modules\Projects\Models\ProjectModel::class,
+            ProjectModel::class,
             'Proyecto_Evento',
             'evento_id',
             'proyecto_id'
         );
-    }
-
-    public function coordinadorRe(): BelongsTo
-    {
-        return $this->belongsTo(Usuario::class, 'coordinador_id');
-    }
-
-    public function projectsRe(): BelongsToMany
-    {
-        return $this->belongsToMany(Proyecto::class, 'proyecto_evento', 'evento_id', 'proyecto_id')
-            ->withPivot('observaciones', 'fecha_inscripcion');
     }
 
     public function registeredUsers()
@@ -87,4 +72,4 @@ class Eventos extends Model
             ->orderBy('proyecto.titulo')
             ->orderBy('usuario.nombre');
     }
-}
+} 

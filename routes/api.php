@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 use App\Modules\Authentication\Controllers\AuthController;
 use App\Modules\Projects\Controllers\ProjectController;
 use App\Modules\Users\Controllers\UserController;
+use App\Modules\Reports\Controllers\ReportController;
 
 
 Route::prefix('auth')->group(function () {
@@ -32,7 +33,7 @@ Route::prefix('users')->middleware(['auth:api', 'roles:Administrador'])->group(f
     Route::delete('/{id}', [UserController::class, 'destroy']);
 });
 
-Route::prefix('events')->middleware(['auth:api', 'roles:Coordinador de Eventos,Administrador'])->group(function () {
+Route::prefix('events')->middleware(['auth:api', 'roles:Coordinador de Eventos'])->group(function () {
 
     Route::get('/', [EventController::class, 'index']);
     Route::post('/', [EventController::class, 'store']);
@@ -114,4 +115,25 @@ Route::prefix('evaluations')->group(function () {
     Route::get('/dashboard/stats', [EvaluationController::class, 'dashboardStats']);
     Route::get('/event/{eventId}/report', [EvaluationController::class, 'generateReport']);
     Route::get('/event/{eventId}/unevaluated-projects', [EvaluationController::class, 'unevaluatedProjects']);
+});
+
+Route::prefix('reports')->middleware(['auth:api'])->group(function () {
+    // Certificate routes
+    Route::prefix('certificates')->group(function () {
+        Route::post('/generate', [ReportController::class, 'generateCertificate']);
+        Route::get('/event/{eventId}/generate-all', [ReportController::class, 'generarCertificadosEvento']);
+        Route::get('/project/{projectId}/event/{eventId}', [ReportController::class, 'show']);
+    });
+
+    // Event reports
+    Route::prefix('events')->group(function () {
+        Route::get('/{eventId}/report', [ReportController::class, 'getEventReport']);
+        Route::get('/{eventId}/activities', [ReportController::class, 'consultarActividades']);
+    });
+
+    // Project reports
+    Route::prefix('projects')->group(function () {
+        Route::get('/with-authors', [ReportController::class, 'getProjectsWithAuthors']);
+        Route::get('/scores', [ReportController::class, 'getProjectScores']);
+    });
 });

@@ -4,7 +4,7 @@ namespace App\Modules\Reports\Models;
 
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class SemilleroUsuario extends Pivot
+class SeedbedUserModel extends Pivot
 {
     protected $table = 'Semillero_Usuario';
     public $timestamps = true;
@@ -14,4 +14,4 @@ class SemilleroUsuario extends Pivot
         'usuario_id',
         'fecha_inscripcion'
     ];
-}
+} 
