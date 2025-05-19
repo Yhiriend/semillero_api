@@ -117,21 +117,18 @@ Route::prefix('evaluations')->group(function () {
     Route::get('/event/{eventId}/unevaluated-projects', [EvaluationController::class, 'unevaluatedProjects']);
 });
 
-Route::prefix('reports')->middleware(['auth:api'])->group(function () {
-    // Certificate routes
+Route::prefix('reports')->middleware(['auth:api', 'roles:Administrador'])->group(function () {
     Route::prefix('certificates')->group(function () {
         Route::post('/generate', [ReportController::class, 'generateCertificate']);
         Route::get('/event/{eventId}/generate-all', [ReportController::class, 'generarCertificadosEvento']);
         Route::get('/project/{projectId}/event/{eventId}', [ReportController::class, 'show']);
     });
 
-    // Event reports
     Route::prefix('events')->group(function () {
         Route::get('/{eventId}/report', [ReportController::class, 'getEventReport']);
         Route::get('/{eventId}/activities', [ReportController::class, 'consultarActividades']);
     });
 
-    // Project reports
     Route::prefix('projects')->group(function () {
         Route::get('/with-authors', [ReportController::class, 'getProjectsWithAuthors']);
         Route::get('/scores', [ReportController::class, 'getProjectScores']);
