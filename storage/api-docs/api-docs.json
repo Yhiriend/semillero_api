@@ -18,63 +18,171 @@
         }
     ],
     "paths": {
-        "/api/inscriptions": {
-            "get": {
+        "/api/auth/forgot": {
+            "post": {
                 "tags": [
-                    "Inscripciones"
+                    "Autenticación"
                 ],
-                "summary": "Listar inscripciones",
-                "operationId": "0250ffc7483e5904b8dc7ce76a002f3c",
-                "parameters": [
-                    {
-                        "name": "semillero_id",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "usuario_id",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "integer"
+                "summary": "Solicitar recuperación de contraseña",
+                "operationId": "ac868700464b5afd40e534e7894e76a2",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "usuario@ejemplo.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
                         }
                     }
-                ],
+                },
                 "responses": {
                     "200": {
-                        "description": "Lista de inscripciones"
+                        "description": "Token generado y enviado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Token generado con éxito"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": {
+                                                "reset_token": "abc123"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/reset": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Restablecer contraseña con token (requiere sesión activa)",
+                "operationId": "dce8fe4a9795ccd870c4b21cfe82a182",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "token",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "token": {
+                                        "type": "string",
+                                        "example": "abc123"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "nuevaclave123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "nuevaclave123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Contraseña actualizada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Contraseña actualizada correctamente."
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Token inválido o expirado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/evaluations": {
+            "get": {
+                "tags": [
+                    "Evaluaciones"
+                ],
+                "summary": "Obtener todas las evaluaciones",
+                "description": "Devuelve una lista de todas las evaluaciones",
+                "operationId": "getAllEvaluations",
+                "responses": {
+                    "200": {
+                        "description": "Evaluaciones obtenidas correctamente"
                     },
                     "404": {
-                        "description": "No se encontraron inscripciones"
+                        "description": "No hay evaluaciones disponibles"
                     }
                 }
             },
             "post": {
                 "tags": [
-                    "Inscripciones"
+                    "Evaluaciones"
                 ],
-                "summary": "Inscribir estudiante en un semillero",
-                "operationId": "f23d4010d13f4d9b01e9be052dd44a4d",
+                "summary": "Crear una nueva evaluación",
+                "description": "Crea una nueva evaluación y devuelve la evaluación creada",
+                "operationId": "createEvaluation",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "required": [
-                                    "semillero_id",
-                                    "usuario_id"
-                                ],
                                 "properties": {
-                                    "semillero_id": {
-                                        "type": "integer",
-                                        "example": 1
+                                    "proyecto_id": {
+                                        "type": "integer"
                                     },
-                                    "usuario_id": {
-                                        "type": "integer",
-                                        "example": 5
+                                    "evaluador_id": {
+                                        "type": "integer"
                                     }
                                 },
                                 "type": "object"
@@ -84,88 +192,27 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Inscripción exitosa"
+                        "description": "Evaluación creada correctamente"
                     },
-                    "409": {
-                        "description": "Ya existe inscripción"
-                    },
-                    "422": {
-                        "description": "Datos inválidos"
+                    "400": {
+                        "description": "Error en la solicitud"
                     }
                 }
             }
         },
-        "/api/seedbeds": {
+        "/api/evaluations/{id}": {
             "get": {
                 "tags": [
-                    "CRUD Semilleros"
+                    "Evaluaciones"
                 ],
-                "summary": "Listar semilleros",
-                "operationId": "7b80408baacc1a453d1a5562ec32fb05",
-                "responses": {
-                    "200": {
-                        "description": "Lista de semilleros"
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "CRUD Semilleros"
-                ],
-                "summary": "Crear un nuevo semillero",
-                "operationId": "9033c31af8b5e6ff566208bfc287b5c0",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "nombre",
-                                    "descripcion",
-                                    "programa_id",
-                                    "profesor_id"
-                                ],
-                                "properties": {
-                                    "nombre": {
-                                        "type": "string",
-                                        "example": "Semillero TIC"
-                                    },
-                                    "descripcion": {
-                                        "type": "string",
-                                        "example": "Grupo de investigación en tecnología"
-                                    },
-                                    "programa_id": {
-                                        "type": "integer",
-                                        "example": 2
-                                    },
-                                    "profesor_id": {
-                                        "type": "integer",
-                                        "example": 5
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Semillero creado correctamente"
-                    }
-                }
-            }
-        },
-        "/api/seedbeds/{id}": {
-            "get": {
-                "tags": [
-                    "CRUD Semilleros"
-                ],
-                "summary": "Consultar semillero por ID",
-                "operationId": "aca0ef5424e776a9f3760f913cf00633",
+                "summary": "Obtener una evaluación por ID",
+                "description": "Devuelve una evaluación específica por su ID",
+                "operationId": "getEvaluationById",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID de la evaluación",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -174,23 +221,25 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Datos del semillero"
+                        "description": "Evaluación obtenida correctamente"
                     },
                     "404": {
-                        "description": "Semillero no encontrado"
+                        "description": "Evaluación no encontrada"
                     }
                 }
             },
             "put": {
                 "tags": [
-                    "CRUD Semilleros"
+                    "Evaluaciones"
                 ],
-                "summary": "Actualizar un semillero existente",
-                "operationId": "2f291b521480041d4368c0483a21cd99",
+                "summary": "Actualizar una evaluación",
+                "description": "Actualiza una evaluación existente y devuelve la evaluación actualizada",
+                "operationId": "updateEvaluation",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID de la evaluación",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -202,28 +251,15 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "required": [
-                                    "nombre",
-                                    "descripcion",
-                                    "programa_id",
-                                    "profesor_id"
-                                ],
                                 "properties": {
-                                    "nombre": {
-                                        "type": "string",
-                                        "example": "Semillero Redes"
+                                    "proyecto_id": {
+                                        "type": "integer"
                                     },
-                                    "descripcion": {
-                                        "type": "string",
-                                        "example": "Nuevo enfoque en redes y protocolos"
+                                    "evaluador_id": {
+                                        "type": "integer"
                                     },
-                                    "programa_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "profesor_id": {
-                                        "type": "integer",
-                                        "example": 8
+                                    "estado": {
+                                        "type": "string"
                                     }
                                 },
                                 "type": "object"
@@ -233,23 +269,25 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Semillero actualizado"
+                        "description": "Evaluación actualizada correctamente"
                     },
-                    "404": {
-                        "description": "Semillero no encontrado"
+                    "400": {
+                        "description": "Error en la solicitud"
                     }
                 }
             },
             "delete": {
                 "tags": [
-                    "CRUD Semilleros"
+                    "Evaluaciones"
                 ],
-                "summary": "Eliminar un semillero",
-                "operationId": "bf4639a036db7c2564339d383cf6d3e9",
+                "summary": "Eliminar una evaluación",
+                "description": "Elimina una evaluación existente por su ID",
+                "operationId": "deleteEvaluation",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID de la evaluación",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -258,10 +296,438 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Semillero eliminado correctamente"
+                        "description": "Evaluación eliminada correctamente"
                     },
                     "404": {
-                        "description": "Semillero no encontrado"
+                        "description": "Evaluación no encontrada"
+                    }
+                }
+            }
+        },
+        "/api/evaluations/{id}/cancel": {
+            "post": {
+                "tags": [
+                    "Evaluaciones"
+                ],
+                "summary": "Cancelar una evaluación",
+                "description": "Marca una evaluación existente como cancelada por su ID",
+                "operationId": "cancelEvaluation",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la evaluación",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Evaluación cancelada correctamente"
+                    },
+                    "400": {
+                        "description": "Error en la solicitud"
+                    }
+                }
+            }
+        },
+        "/api/evaluations/{id}/complete": {
+            "post": {
+                "tags": [
+                    "Evaluaciones"
+                ],
+                "summary": "Completar una evaluación",
+                "description": "Marca una evaluación como completada y asigna puntajes",
+                "operationId": "completeEvaluation",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la evaluación",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "dominio_tema": {
+                                        "type": "integer"
+                                    },
+                                    "manejo_auditorio": {
+                                        "type": "integer"
+                                    },
+                                    "comentarios": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Evaluación completada correctamente"
+                    },
+                    "400": {
+                        "description": "Error en la solicitud"
+                    }
+                }
+            }
+        },
+        "/api/evaluations/{id}/reassign": {
+            "post": {
+                "tags": [
+                    "Evaluaciones"
+                ],
+                "summary": "Reasignar evaluador a una evaluación",
+                "description": "Reasigna un evaluador a una evaluación existente",
+                "operationId": "reassignEvaluator",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la evaluación",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "evaluador_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Evaluador reasignado correctamente"
+                    },
+                    "400": {
+                        "description": "Error en la solicitud"
+                    }
+                }
+            }
+        },
+        "/api/evaluations/project/{projectId}": {
+            "get": {
+                "tags": [
+                    "Evaluaciones"
+                ],
+                "summary": "Obtener evaluaciones por ID de proyecto",
+                "description": "Devuelve una lista de evaluaciones asociadas a un proyecto específico",
+                "operationId": "getEvaluationsByProject",
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "ID del proyecto",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Evaluaciones por proyecto obtenidas correctamente"
+                    },
+                    "400": {
+                        "description": "Error en la solicitud"
+                    }
+                }
+            }
+        },
+        "/api/evaluations/evaluator/{evaluatorId}": {
+            "get": {
+                "tags": [
+                    "Evaluaciones"
+                ],
+                "summary": "Obtener evaluaciones por ID de evaluador",
+                "description": "Devuelve una lista de evaluaciones asociadas a un evaluador específico",
+                "operationId": "getEvaluationsByEvaluator",
+                "parameters": [
+                    {
+                        "name": "evaluatorId",
+                        "in": "path",
+                        "description": "ID del evaluador",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Evaluaciones por evaluador obtenidas correctamente"
+                    },
+                    "400": {
+                        "description": "Error en la solicitud"
+                    }
+                }
+            }
+        },
+        "/api/evaluations/evaluator/{evaluatorId}/performance": {
+            "get": {
+                "tags": [
+                    "Evaluaciones"
+                ],
+                "summary": "Obtener rendimiento del evaluador",
+                "description": "Devuelve el rendimiento de un evaluador específico",
+                "operationId": "getEvaluatorPerformance",
+                "parameters": [
+                    {
+                        "name": "evaluatorId",
+                        "in": "path",
+                        "description": "ID del evaluador",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rendimiento del evaluador obtenido correctamente"
+                    },
+                    "400": {
+                        "description": "Error en la solicitud"
+                    }
+                }
+            }
+        },
+        "/api/evaluations/project/{projectId}/metrics": {
+            "get": {
+                "tags": [
+                    "Evaluaciones"
+                ],
+                "summary": "Obtener métricas por estado",
+                "description": "Devuelve métricas de evaluación agrupadas por estado para un proyecto específico",
+                "operationId": "getMetricsByStatus",
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "ID del proyecto",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Métricas por estado obtenidas correctamente"
+                    },
+                    "400": {
+                        "description": "Error en la solicitud"
+                    }
+                }
+            }
+        },
+        "/api/evaluations/status/{status}": {
+            "get": {
+                "tags": [
+                    "Evaluaciones"
+                ],
+                "summary": "Obtener evaluaciones por estado",
+                "description": "Devuelve una lista de evaluaciones filtradas por estado",
+                "operationId": "getEvaluationsByStatus",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "path",
+                        "description": "Estado de la evaluación (pendiente, en_proceso, completada, cancelada)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Evaluaciones por estado obtenidas correctamente"
+                    },
+                    "404": {
+                        "description": "No hay evaluaciones disponibles para este estado"
+                    }
+                }
+            }
+        },
+        "/api/evaluations/project/{projectId}/available-evaluators": {
+            "get": {
+                "tags": [
+                    "Evaluaciones"
+                ],
+                "summary": "Obtener evaluadores disponibles por ID de proyecto",
+                "description": "Devuelve una lista de evaluadores disponibles para un proyecto específico",
+                "operationId": "getAvailableEvaluators",
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "ID del proyecto",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Evaluadores disponibles obtenidos correctamente"
+                    },
+                    "400": {
+                        "description": "Error en la solicitud"
+                    }
+                }
+            }
+        },
+        "/api/evaluations/event/{eventId}/mass-assign": {
+            "post": {
+                "tags": [
+                    "Evaluaciones"
+                ],
+                "summary": "Asignar evaluadores a proyectos masivamente",
+                "description": "Asigna evaluadores a múltiples proyectos de forma masiva",
+                "operationId": "massAssignEvaluators",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "ID del evento",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "assignments": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "proyecto_id": {
+                                                    "type": "integer"
+                                                },
+                                                "evaluador_id": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Evaluadores asignados correctamente"
+                    },
+                    "400": {
+                        "description": "Error en la solicitud"
+                    }
+                }
+            }
+        },
+        "/api/evaluations/dashboard/stats": {
+            "get": {
+                "tags": [
+                    "Evaluaciones"
+                ],
+                "summary": "Obtener estadísticas del dashboard",
+                "description": "Devuelve estadísticas del dashboard relacionadas con las evaluaciones",
+                "operationId": "getDashboardStats",
+                "responses": {
+                    "200": {
+                        "description": "Estadísticas del dashboard obtenidas correctamente"
+                    },
+                    "400": {
+                        "description": "Error en la solicitud"
+                    }
+                }
+            }
+        },
+        "/api/evaluations/event/{eventId}/report": {
+            "get": {
+                "tags": [
+                    "Evaluaciones"
+                ],
+                "summary": "Generar reporte de evaluación",
+                "description": "Genera un reporte de evaluación para un evento específico",
+                "operationId": "generateReport",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "ID del evento",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Reporte generado correctamente"
+                    },
+                    "400": {
+                        "description": "Error en la solicitud"
+                    }
+                }
+            }
+        },
+        "/api/evaluations/event/{eventId}/unevaluated-projects": {
+            "get": {
+                "tags": [
+                    "Evaluaciones"
+                ],
+                "summary": "Obtener proyectos no evaluados por evento",
+                "description": "Devuelve una lista de proyectos que necesitan evaluación para un evento específico",
+                "operationId": "getUnevaluatedProjects",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "ID del evento",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Proyectos no evaluados obtenidos correctamente"
+                    },
+                    "400": {
+                        "description": "Error en la solicitud"
                     }
                 }
             }
@@ -755,6 +1221,16 @@
                             }
                         }
                     },
+                    "404": {
+                        "description": "Evento o proyecto no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
                     "422": {
                         "description": "Errores de validación",
                         "content": {
@@ -937,6 +1413,3141 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/api/faculties": {
+            "get": {
+                "tags": [
+                    "Facultades"
+                ],
+                "summary": "Listar todas las facultades",
+                "description": "Obtiene una lista de todas las facultades registradas en el sistema. Parte de la gestión de facultades. Requiere rol de administrador.",
+                "operationId": "getAllFaculties",
+                "responses": {
+                    "200": {
+                        "description": "Facultades obtenidas exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Facultades obtenidas correctamente"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "nombre": {
+                                                        "type": "string",
+                                                        "example": "Facultad de Ingeniería"
+                                                    },
+                                                    "universidad_id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "fecha_creacion": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-05-16T10:15:00.000000Z"
+                                                    },
+                                                    "fecha_actualizacion": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-05-16T10:15:00.000000Z"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No autenticado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Acceso denegado (rol no autorizado)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No tienes permisos para realizar esta acción"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error del servidor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No se encontraron facultades inscritas"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Facultades"
+                ],
+                "summary": "Crear una nueva facultad",
+                "description": "Crea una nueva facultad con el nombre y universidad proporcionados. Parte de la gestión de facultades. Requiere rol de administrador.",
+                "operationId": "createFaculty",
+                "requestBody": {
+                    "description": "Datos de la facultad",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre",
+                                    "universidad_id"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "description": "Nombre de la facultad",
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Facultad de Ingeniería"
+                                    },
+                                    "universidad_id": {
+                                        "description": "ID de la universidad a la que pertenece",
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Facultad creada exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Facultad creada correctamente"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "nombre": {
+                                                    "type": "string",
+                                                    "example": "Facultad de Ingeniería"
+                                                },
+                                                "universidad_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "fecha_creacion": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-16T10:15:00.000000Z"
+                                                },
+                                                "fecha_actualizacion": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-16T10:15:00.000000Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No autenticado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Acceso denegado (rol no autorizado)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No tienes permisos para realizar esta acción"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Errores de validación"
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "nombre": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "El campo nombre es obligatorio"
+                                                    }
+                                                },
+                                                "universidad_id": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "El campo universidad_id debe ser un entero válido"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error del servidor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No se pudo crear la facultad: Error de base de datos"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/faculties/{faculty}": {
+            "get": {
+                "tags": [
+                    "Facultades"
+                ],
+                "summary": "Obtener una facultad por ID",
+                "description": "Devuelve los detalles de una facultad específica por su ID. Parte de la gestión de facultades. Requiere rol de administrador.",
+                "operationId": "getFacultyById",
+                "parameters": [
+                    {
+                        "name": "faculty",
+                        "in": "path",
+                        "description": "ID de la facultad",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Facultad obtenida exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Facultad obtenida correctamente"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "nombre": {
+                                                    "type": "string",
+                                                    "example": "Facultad de Ingeniería"
+                                                },
+                                                "universidad_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "fecha_creacion": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-16T10:15:00.000000Z"
+                                                },
+                                                "fecha_actualizacion": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-16T10:15:00.000000Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No autenticado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Acceso denegado (rol no autorizado)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No tienes permisos para realizar esta acción"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Facultad no encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No se encontró la facultad con ID: 1"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Facultades"
+                ],
+                "summary": "Actualizar una facultad",
+                "description": "Actualiza el nombre y/o universidad de una facultad existente por su ID. Parte de la gestión de facultades. Requiere rol de administrador.",
+                "operationId": "updateFaculty",
+                "parameters": [
+                    {
+                        "name": "faculty",
+                        "in": "path",
+                        "description": "ID de la facultad",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Datos actualizados de la facultad",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre",
+                                    "universidad_id"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "description": "Nuevo nombre de la facultad",
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Facultad de Ingeniería Actualizada"
+                                    },
+                                    "universidad_id": {
+                                        "description": "ID de la universidad a la que pertenece",
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Facultad actualizada exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Facultad actualizada correctamente"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "nombre": {
+                                                    "type": "string",
+                                                    "example": "Facultad de Ingeniería Actualizada"
+                                                },
+                                                "universidad_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "fecha_creacion": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-16T10:15:00.000000Z"
+                                                },
+                                                "fecha_actualizacion": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-16T10:16:00.000000Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No autenticado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Acceso denegado (rol no autorizado)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No tienes permisos para realizar esta acción"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Facultad no encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No se encontró la facultad con ID: 1"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Errores de validación"
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "nombre": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "El campo nombre es obligatorio"
+                                                    }
+                                                },
+                                                "universidad_id": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "El campo universidad_id debe ser un entero válido"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Facultades"
+                ],
+                "summary": "Eliminar una facultad",
+                "description": "Elimina una facultad existente por su ID. Parte de la gestión de facultades. Requiere rol de administrador.",
+                "operationId": "deleteFaculty",
+                "parameters": [
+                    {
+                        "name": "faculty",
+                        "in": "path",
+                        "description": "ID de la facultad",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Facultad eliminada exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Facultad eliminada correctamente"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No autenticado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Acceso denegado (rol no autorizado)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No tienes permisos para realizar esta acción"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Facultad no encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No se encontró la facultad con ID: 1"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/programs": {
+            "get": {
+                "tags": [
+                    "Programas"
+                ],
+                "summary": "Listar todos los programas",
+                "description": "Obtiene una lista de todos los programas registrados en el sistema. Parte de la gestión de programas. Requiere rol de administrador.",
+                "operationId": "getAllPrograms",
+                "responses": {
+                    "200": {
+                        "description": "Programas obtenidos exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Programas obtenidos correctamente"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "nombre": {
+                                                        "type": "string",
+                                                        "example": "Ingeniería de Sistemas"
+                                                    },
+                                                    "descripcion": {
+                                                        "type": "string",
+                                                        "example": "Programa enfocado en el desarrollo de software"
+                                                    },
+                                                    "facultad_id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "fecha_creacion": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-05-16T10:20:00.000000Z"
+                                                    },
+                                                    "fecha_actualizacion": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-05-16T10:20:00.000000Z"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No autenticado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Acceso denegado (rol no autorizado)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No tienes permisos para realizar esta acción"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error del servidor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No se encontraron programas inscritos"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Programas"
+                ],
+                "summary": "Crear un nuevo programa",
+                "description": "Crea un nuevo programa con el nombre, descripción y facultad proporcionados. Parte de la gestión de programas. Requiere rol de administrador.",
+                "operationId": "createProgram",
+                "requestBody": {
+                    "description": "Datos del programa",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre",
+                                    "facultad_id"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "description": "Nombre del programa",
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Ingeniería de Sistemas"
+                                    },
+                                    "descripcion": {
+                                        "description": "Descripción del programa",
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "example": "Programa enfocado en el desarrollo de software",
+                                        "nullable": true
+                                    },
+                                    "facultad_id": {
+                                        "description": "ID de la facultad a la que pertenece",
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Programa creado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Programa creado correctamente"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "nombre": {
+                                                    "type": "string",
+                                                    "example": "Ingeniería de Sistemas"
+                                                },
+                                                "descripcion": {
+                                                    "type": "string",
+                                                    "example": "Programa enfocado en el desarrollo de software"
+                                                },
+                                                "facultad_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "fecha_creacion": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-16T10:20:00.000000Z"
+                                                },
+                                                "fecha_actualizacion": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-16T10:20:00.000000Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No autenticado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Acceso denegado (rol no autorizado)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No tienes permisos para realizar esta acción"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Errores de validación"
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "nombre": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "El campo nombre es obligatorio"
+                                                    }
+                                                },
+                                                "facultad_id": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "El campo facultad_id debe ser un entero válido"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error del servidor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No se pudo crear el programa: Error de base de datos"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/programs/{program}": {
+            "get": {
+                "tags": [
+                    "Programas"
+                ],
+                "summary": "Obtener un programa por ID",
+                "description": "Devuelve los detalles de un programa específico por su ID. Parte de la gestión de programas. Requiere rol de administrador.",
+                "operationId": "getProgramById",
+                "parameters": [
+                    {
+                        "name": "program",
+                        "in": "path",
+                        "description": "ID del programa",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Programa obtenido exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Programa obtenido correctamente"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "nombre": {
+                                                    "type": "string",
+                                                    "example": "Ingeniería de Sistemas"
+                                                },
+                                                "descripcion": {
+                                                    "type": "string",
+                                                    "example": "Programa enfocado en el desarrollo de software"
+                                                },
+                                                "facultad_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "fecha_creacion": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-16T10:20:00.000000Z"
+                                                },
+                                                "fecha_actualizacion": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-16T10:20:00.000000Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No autenticado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Acceso denegado (rol no autorizado)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No tienes permisos para realizar esta acción"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Programa no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No se encontró el programa con ID: 1"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Programas"
+                ],
+                "summary": "Actualizar un programa",
+                "description": "Actualiza el nombre, descripción y/o facultad de un programa existente por su ID. Parte de la gestión de programas. Requiere rol de administrador.",
+                "operationId": "updateProgram",
+                "parameters": [
+                    {
+                        "name": "program",
+                        "in": "path",
+                        "description": "ID del programa",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Datos actualizados del programa",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre",
+                                    "facultad_id"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "description": "Nuevo nombre del programa",
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Ingeniería de Sistemas Actualizada"
+                                    },
+                                    "descripcion": {
+                                        "description": "Nueva descripción del programa",
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "example": "Programa actualizado para desarrollo de software",
+                                        "nullable": true
+                                    },
+                                    "facultad_id": {
+                                        "description": "ID de la facultad a la que pertenece",
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Programa actualizado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Programa actualizado correctamente"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "nombre": {
+                                                    "type": "string",
+                                                    "example": "Ingeniería de Sistemas Actualizada"
+                                                },
+                                                "descripcion": {
+                                                    "type": "string",
+                                                    "example": "Programa actualizado para desarrollo de software"
+                                                },
+                                                "facultad_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "fecha_creacion": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-16T10:20:00.000000Z"
+                                                },
+                                                "fecha_actualizacion": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-16T10:21:00.000000Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No autenticado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Acceso denegado (rol no autorizado)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No tienes permisos para realizar esta acción"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Programa no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No se encontró el programa con ID: 1"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Errores de validación"
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "nombre": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "El campo nombre es obligatorio"
+                                                    }
+                                                },
+                                                "facultad_id": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "El campo facultad_id debe ser un entero válido"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Programas"
+                ],
+                "summary": "Eliminar un programa",
+                "description": "Elimina un programa existente por su ID. Parte de la gestión de programas. Requiere rol de administrador.",
+                "operationId": "deleteProgram",
+                "parameters": [
+                    {
+                        "name": "program",
+                        "in": "path",
+                        "description": "ID del programa",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Programa eliminado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Programa eliminado correctamente"
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No autenticado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Acceso denegado (rol no autorizado)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No tienes permisos para realizar esta acción"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Programa no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No se encontró el programa con ID: 1"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/reports/projects/with-authors": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Get all projects with their authors",
+                "description": "Get all projects with their authors",
+                "operationId": "5c35929c35b357c808b90f0dab5a2d99",
+                "responses": {
+                    "200": {
+                        "description": "List of projects with authors",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Lista de proyectos con sus autores obtenida exitosamente"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "titulo": {
+                                                        "type": "string"
+                                                    },
+                                                    "autores": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "nombre": {
+                                                                    "type": "string"
+                                                                },
+                                                                "email": {
+                                                                    "type": "string"
+                                                                },
+                                                                "tipo": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/reports/certificates/generate": {
+            "post": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Generate a participation certificate",
+                "description": "Generate a participation certificate",
+                "operationId": "3c41c40fcd418a6971d85daf91f058b9",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "autor",
+                                    "documento",
+                                    "expedida",
+                                    "semillero"
+                                ],
+                                "properties": {
+                                    "autor": {
+                                        "description": "ID of the author",
+                                        "type": "integer"
+                                    },
+                                    "documento": {
+                                        "description": "Document number",
+                                        "type": "string"
+                                    },
+                                    "expedida": {
+                                        "description": "Issue date",
+                                        "type": "string"
+                                    },
+                                    "semillero": {
+                                        "description": "ID of the seedbed",
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Certificate generated successfully",
+                        "content": {
+                            "application/pdf": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/reports/events/{eventId}/report": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Get detailed report for a specific event",
+                "description": "Get event report",
+                "operationId": "3fba2df879bbd278c1d95ad35a07b777",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "ID of the event",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Event report generated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No activities found for this event"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/reports/projects/scores": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Get scores for all projects",
+                "description": "Get project scores",
+                "operationId": "72a5927964f4265daa25b4d1a0efb7f5",
+                "responses": {
+                    "200": {
+                        "description": "Project scores retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "project_id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "project_title": {
+                                                        "type": "string"
+                                                    },
+                                                    "average_score": {
+                                                        "type": "number",
+                                                        "format": "float"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No completed evaluations found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/reports/certificates/event/{eventId}/generate-all": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Generate certificates for all participants in an event",
+                "description": "Generate certificates for all participants in an event",
+                "operationId": "d018fccf02cdc00f362e50692086f523",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "ID of the event",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Certificates generated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "evento": {
+                                            "type": "string"
+                                        },
+                                        "semillero": {
+                                            "type": "string"
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        },
+                                        "certificados": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "nombre_participante": {
+                                                        "type": "string"
+                                                    },
+                                                    "correo": {
+                                                        "type": "string"
+                                                    },
+                                                    "nombre_evento": {
+                                                        "type": "string"
+                                                    },
+                                                    "fecha_inicio_evento": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "fecha_fin_evento": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "ubicacion_evento": {
+                                                        "type": "string"
+                                                    },
+                                                    "semillero": {
+                                                        "type": "string"
+                                                    },
+                                                    "fecha_inscripcion": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Event or seedbed not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/reports/events/{eventId}/activities": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Get all activities for a specific event",
+                "description": "Get all activities",
+                "operationId": "7ab85906f20ee09ec4b80cca183dba40",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "ID of the event",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Activities retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "total": {
+                                            "type": "integer"
+                                        },
+                                        "actividades": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "actividad_id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "actividad_titulo": {
+                                                        "type": "string"
+                                                    },
+                                                    "descripcion": {
+                                                        "type": "string"
+                                                    },
+                                                    "fecha_inicio": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "fecha_fin": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "estado": {
+                                                        "type": "string"
+                                                    },
+                                                    "responsable_nombre": {
+                                                        "type": "string"
+                                                    },
+                                                    "responsable_correo": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/reports/certificates/project/{projectId}/event/{eventId}": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Get certificate details for a specific project in an event",
+                "description": "Get certificate details for a specific project in an event",
+                "operationId": "d6a0dd4666b4428e29162008e9401c9b",
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "ID of the project",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "ID of the event",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Certificate details retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "proyecto": {
+                                            "type": "string"
+                                        },
+                                        "evento": {
+                                            "type": "string"
+                                        },
+                                        "promedio_puntuacion": {
+                                            "type": "number",
+                                            "format": "float"
+                                        },
+                                        "evaluaciones": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "evaluador_id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "puntuacion": {
+                                                        "type": "number",
+                                                        "format": "float"
+                                                    },
+                                                    "comentarios": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No completed evaluations found for this project in the event"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/inscriptions": {
+            "get": {
+                "tags": [
+                    "Inscripciones"
+                ],
+                "summary": "Listar inscripciones",
+                "operationId": "0250ffc7483e5904b8dc7ce76a002f3c",
+                "parameters": [
+                    {
+                        "name": "semillero_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "usuario_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de inscripciones"
+                    },
+                    "404": {
+                        "description": "No se encontraron inscripciones"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Inscripciones"
+                ],
+                "summary": "Inscribir estudiante en un semillero",
+                "operationId": "f23d4010d13f4d9b01e9be052dd44a4d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "semillero_id",
+                                    "usuario_id"
+                                ],
+                                "properties": {
+                                    "semillero_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "usuario_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Inscripción exitosa"
+                    },
+                    "409": {
+                        "description": "Ya existe inscripción"
+                    },
+                    "422": {
+                        "description": "Datos inválidos"
+                    }
+                }
+            }
+        },
+        "/api/seedbeds": {
+            "get": {
+                "tags": [
+                    "CRUD Semilleros"
+                ],
+                "summary": "Listar semilleros",
+                "operationId": "7b80408baacc1a453d1a5562ec32fb05",
+                "responses": {
+                    "200": {
+                        "description": "Lista de semilleros"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "CRUD Semilleros"
+                ],
+                "summary": "Crear un nuevo semillero",
+                "operationId": "9033c31af8b5e6ff566208bfc287b5c0",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre",
+                                    "descripcion",
+                                    "programa_id",
+                                    "profesor_id"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Semillero TIC"
+                                    },
+                                    "descripcion": {
+                                        "type": "string",
+                                        "example": "Grupo de investigación en tecnología"
+                                    },
+                                    "programa_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "profesor_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Semillero creado correctamente"
+                    }
+                }
+            }
+        },
+        "/api/seedbeds/{id}": {
+            "get": {
+                "tags": [
+                    "CRUD Semilleros"
+                ],
+                "summary": "Consultar semillero por ID",
+                "operationId": "aca0ef5424e776a9f3760f913cf00633",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Datos del semillero"
+                    },
+                    "404": {
+                        "description": "Semillero no encontrado"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "CRUD Semilleros"
+                ],
+                "summary": "Actualizar un semillero existente",
+                "operationId": "2f291b521480041d4368c0483a21cd99",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre",
+                                    "descripcion",
+                                    "programa_id",
+                                    "profesor_id"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Semillero Redes"
+                                    },
+                                    "descripcion": {
+                                        "type": "string",
+                                        "example": "Nuevo enfoque en redes y protocolos"
+                                    },
+                                    "programa_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "profesor_id": {
+                                        "type": "integer",
+                                        "example": 8
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Semillero actualizado"
+                    },
+                    "404": {
+                        "description": "Semillero no encontrado"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "CRUD Semilleros"
+                ],
+                "summary": "Eliminar un semillero",
+                "operationId": "bf4639a036db7c2564339d383cf6d3e9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Semillero eliminado correctamente"
+                    },
+                    "404": {
+                        "description": "Semillero no encontrado"
+                    }
+                }
+            }
+        },
+        "/api/universities": {
+            "get": {
+                "tags": [
+                    "Universidades"
+                ],
+                "summary": "Obtener todas las universidades",
+                "description": "Devuelve una lista de todas las universidades registradas.",
+                "operationId": "getAllUniversities",
+                "responses": {
+                    "200": {
+                        "description": "Lista de universidades obtenida correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "nombre": {
+                                                        "type": "string",
+                                                        "example": "Universidad Ejemplo"
+                                                    },
+                                                    "fecha_creacion": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-05-16T09:50:00.000000Z"
+                                                    },
+                                                    "fecha_actualizacion": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-05-16T09:50:00.000000Z"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Universidades obtenidas correctamente"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 200
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No autenticado"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 401
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Acceso denegado (rol no autorizado)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No tienes permisos para realizar esta acción"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 403
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error del servidor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No se encontraron universidades inscritas"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 500
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Universidades"
+                ],
+                "summary": "Crear una nueva universidad",
+                "description": "Crea una nueva universidad con el nombre proporcionado.",
+                "operationId": "createUniversity",
+                "requestBody": {
+                    "description": "Datos de la universidad",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "description": "Nombre de la universidad",
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Universidad Ejemplo"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Universidad creada correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "nombre": {
+                                                    "type": "string",
+                                                    "example": "Universidad Ejemplo"
+                                                },
+                                                "fecha_creacion": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-16T09:50:00.000000Z"
+                                                },
+                                                "fecha_actualizacion": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-16T09:50:00.000000Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Universidad creada correctamente"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 201
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No autenticado"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 401
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Acceso denegado (rol no autorizado)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No tienes permisos para realizar esta acción"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 403
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Errores de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Errores de validación"
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "nombre": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "El campo nombre es obligatorio"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 422
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error del servidor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No se pudo crear la universidad: Error de base de datos"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 500
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/universities/{university}": {
+            "get": {
+                "tags": [
+                    "Universidades"
+                ],
+                "summary": "Obtener una universidad por ID",
+                "description": "Devuelve los detalles de una universidad específica.",
+                "operationId": "getUniversityById",
+                "parameters": [
+                    {
+                        "name": "university",
+                        "in": "path",
+                        "description": "ID de la universidad",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Universidad obtenida correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "nombre": {
+                                                    "type": "string",
+                                                    "example": "Universidad Ejemplo"
+                                                },
+                                                "fecha_creacion": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-16T09:50:00.000000Z"
+                                                },
+                                                "fecha_actualizacion": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-16T09:50:00.000000Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Universidad obtenida correctamente"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 200
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No autenticado"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 401
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Acceso denegado (rol no autorizado)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No tienes permisos para realizar esta acción"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 403
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Universidad no encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No se encontró la universidad con ID: 1"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 404
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Universidades"
+                ],
+                "summary": "Actualizar una universidad",
+                "description": "Actualiza el nombre de una universidad existente.",
+                "operationId": "updateUniversity",
+                "parameters": [
+                    {
+                        "name": "university",
+                        "in": "path",
+                        "description": "ID de la universidad",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Datos actualizados de la universidad",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "description": "Nuevo nombre de la universidad",
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Universidad Actualizada"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Universidad actualizada correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "nombre": {
+                                                    "type": "string",
+                                                    "example": "Universidad Actualizada"
+                                                },
+                                                "fecha_creacion": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-16T09:50:00.000000Z"
+                                                },
+                                                "fecha_actualizacion": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-05-16T10:00:00.000000Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Universidad actualizada correctamente"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 200
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No autenticado"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 401
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Acceso denegado (rol no autorizado)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No tienes permisos para realizar esta acción"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 403
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Universidad no encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No se encontró la universidad con ID: 1"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 404
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Errores de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Errores de validación"
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "nombre": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "El campo nombre es obligatorio"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 422
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Universidades"
+                ],
+                "summary": "Eliminar una universidad",
+                "description": "Elimina una universidad existente por su ID.",
+                "operationId": "deleteUniversity",
+                "parameters": [
+                    {
+                        "name": "university",
+                        "in": "path",
+                        "description": "ID de la universidad",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Universidad eliminada correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "null"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Universidad eliminada correctamente"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 200
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No autenticado"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 401
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Acceso denegado (rol no autorizado)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No tienes permisos para realizar esta acción"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 403
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Universidad no encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No se encontró la universidad con ID: 1"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 404
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users": {
+            "get": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Listar todos los usuarios",
+                "operationId": "de627648b749cabc72a2ae5761ba0297",
+                "responses": {
+                    "200": {
+                        "description": "Usuarios obtenidos correctamente"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Crear un nuevo usuario",
+                "operationId": "a414262c5ea2a6b8654bb38f8a6b3011",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserStoreRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuario creado correctamente"
+                    },
+                    "422": {
+                        "description": "Errores de validación"
+                    }
+                }
+            }
+        },
+        "/api/users/{id}": {
+            "get": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Obtener un usuario por ID",
+                "operationId": "50b27a4b9870b4d22683fb1885fb5d57",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuario obtenido correctamente"
+                    },
+                    "404": {
+                        "description": "Usuario no encontrado"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Actualizar un usuario",
+                "operationId": "4726bc6f4ff863673daad71c4ab4bffe",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Usuario actualizado correctamente"
+                    },
+                    "404": {
+                        "description": "Usuario no encontrado"
+                    },
+                    "422": {
+                        "description": "Errores de validación"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Eliminar un usuario",
+                "operationId": "3a1ea14d4c19a1b2b612f61eedf3e7ec",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuario eliminado correctamente"
+                    },
+                    "404": {
+                        "description": "Usuario no encontrado"
+                    }
+                }
             }
         }
     },
@@ -1192,6 +4803,67 @@
                     }
                 },
                 "type": "object"
+            },
+            "UserStoreRequest": {
+                "required": [
+                    "nombre",
+                    "email",
+                    "contraseña",
+                    "tipo",
+                    "programa_id"
+                ],
+                "properties": {
+                    "nombre": {
+                        "type": "string",
+                        "example": "John Doe"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "john@example.com"
+                    },
+                    "contraseña": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "password123"
+                    },
+                    "tipo": {
+                        "type": "string",
+                        "example": "Estudiante"
+                    },
+                    "programa_id": {
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "UserUpdateRequest": {
+                "properties": {
+                    "nombre": {
+                        "type": "string",
+                        "example": "John Doe"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "john@example.com"
+                    },
+                    "contraseña": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "password123"
+                    },
+                    "tipo": {
+                        "type": "string",
+                        "example": "Estudiante"
+                    },
+                    "programa_id": {
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
             }
         },
         "securitySchemes": {
@@ -1204,16 +4876,12 @@
     },
     "tags": [
         {
-            "name": "CRUD Semilleros",
-            "description": "Operaciones relacionadas con el CRUD de semilleros"
-        },
-        {
-            "name": "Inscripciones",
-            "description": "Inscripciones"
-        },
-        {
             "name": "Autenticación",
             "description": "Endpoints para la autenticación de usuarios"
+        },
+        {
+            "name": "Evaluaciones",
+            "description": "Operaciones relacionadas con las evaluaciones"
         },
         {
             "name": "Eventos",
@@ -1222,6 +4890,34 @@
         {
             "name": "Proyectos de Eventos",
             "description": "Endpoints para gestionar la relación entre eventos y proyectos"
+        },
+        {
+            "name": "Facultades",
+            "description": "Operaciones relacionadas con la gestión de facultades"
+        },
+        {
+            "name": "Programas",
+            "description": "Operaciones relacionadas con la gestión de programas"
+        },
+        {
+            "name": "Reports",
+            "description": "API Endpoints for generating and managing reports"
+        },
+        {
+            "name": "CRUD Semilleros",
+            "description": "Operaciones relacionadas con el CRUD de semilleros"
+        },
+        {
+            "name": "Universidades",
+            "description": "Operaciones relacionadas con universidades"
+        },
+        {
+            "name": "Usuarios",
+            "description": "Operaciones CRUD para la gestión de usuarios"
+        },
+        {
+            "name": "Inscripciones",
+            "description": "Inscripciones"
         }
     ]
 }

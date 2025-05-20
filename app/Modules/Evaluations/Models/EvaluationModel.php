@@ -4,6 +4,8 @@ namespace App\Modules\Evaluations\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Modules\Projects\Models\ProjectModel;
+use App\Modules\Users\Models\UserModel;
 
 class EvaluationModel extends Model
 {
@@ -62,6 +64,16 @@ class EvaluationModel extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(\App\Modules\Projects\Models\ProjectModel::class, 'proyecto_id', 'id');
+    }
+
+    public function evaluador(): BelongsTo
+    {
+        return $this->belongsTo(UserModel::class, 'evaluador_id');
+    }
+
+    public function proyecto(): BelongsTo
+    {
+        return $this->belongsTo(ProjectModel::class, 'proyecto_id');
     }
 
 }

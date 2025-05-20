@@ -54,4 +54,5 @@ class EventModel extends Model
             'proyecto_id'
         );
     }
+
 }
