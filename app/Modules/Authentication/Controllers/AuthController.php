@@ -32,6 +32,7 @@ class AuthController
         $this->authService = $authService;
     }
 
+    /*
     /**
      * @OA\Post(
      *     path="/api/auth/register",
@@ -106,6 +107,7 @@ class AuthController
         }
     }
 
+    /*
     /**
      * @OA\Post(
      *     path="/api/auth/login",
@@ -154,6 +156,7 @@ class AuthController
         }
     }
 
+    /*
     /**
      * @OA\Post(
      *     path="/api/auth/refresh",
@@ -192,6 +195,7 @@ class AuthController
         }
     }
 
+    /*
     /**
      * @OA\Get(
      *     path="/api/auth/me",
@@ -226,6 +230,7 @@ class AuthController
         return $this->successResponse($this->authService->me());
     }
 
+    /*
     /**
      * @OA\Post(
      *     path="/api/auth/logout",

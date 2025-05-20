@@ -1,16 +1,18 @@
 <?php
 
-use App\Modules\Evaluations\Controllers\EvaluationController;
+use Illuminate\Support\Facades\Route;
+use App\Modules\Authentication\Controllers\AuthController;
+use App\Modules\Users\Controllers\UserController;
 use App\Modules\Events\Controllers\EventController;
 use App\Modules\Events\Controllers\ProjectEventController;
+use App\Modules\Projects\Controllers\ProjectController;
 use App\Modules\Faculties\Controllers\FacultyController;
 use App\Modules\Programs\Controllers\ProgramController;
 use App\Modules\Universities\Controllers\UniversityController;
-use Illuminate\Support\Facades\Route;
-use App\Modules\Authentication\Controllers\AuthController;
-use App\Modules\Projects\Controllers\ProjectController;
-use App\Modules\Users\Controllers\UserController;
+use App\Modules\Evaluations\Controllers\EvaluationController;
 use App\Modules\Reports\Controllers\ReportController;
+use App\Modules\Seedbeds\Controllers\SeedbedsController;
+use App\Modules\Seedbeds\Controllers\InscriptionController;
 
 
 Route::prefix('auth')->group(function () {
@@ -18,6 +20,7 @@ Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
     Route::post('forgot', [AuthController::class, 'forgotPassword']);
     Route::post('reset', [AuthController::class, 'resetPassword']);
+
     Route::middleware('auth:api')->group(function () {
         Route::get('me', [AuthController::class, 'me']);
         Route::post('refresh', [AuthController::class, 'refresh']);
@@ -31,23 +34,6 @@ Route::prefix('users')->middleware(['auth:api', 'roles:Administrador'])->group(f
     Route::get('/{id}', [UserController::class, 'show']);
     Route::put('/{id}', [UserController::class, 'update']);
     Route::delete('/{id}', [UserController::class, 'destroy']);
-});
-
-Route::prefix('events')->middleware(['auth:api', 'roles:Coordinador de Eventos'])->group(function () {
-
-    Route::get('/', [EventController::class, 'index']);
-    Route::post('/', [EventController::class, 'store']);
-    Route::get('/{event}', [EventController::class, 'show']);
-    Route::put('/{event}', [EventController::class, 'update']);
-    Route::delete('/{event}', [EventController::class, 'destroy']);
-
-    Route::prefix('{event}/projects')->group(function () {
-        Route::get('/', [ProjectEventController::class, 'index']);
-        Route::post('/', [ProjectEventController::class, 'store']);
-        Route::get('/{project}', [ProjectEventController::class, 'show']);
-        Route::delete('/{project}', [ProjectEventController::class, 'destroy']);
-    });
-
 });
 
 Route::prefix('universities')->middleware(['auth:api', 'roles:Administrador'])->group(function () {
@@ -74,6 +60,21 @@ Route::prefix('programs')->middleware(['auth:api', 'roles:Administrador'])->grou
     Route::delete('/{program}', [ProgramController::class, 'destroy']);
 });
 
+Route::prefix('events')->middleware(['auth:api', 'roles:Coordinador de Eventos'])->group(function () {
+    Route::get('/', [EventController::class, 'index']);
+    Route::post('/', [EventController::class, 'store']);
+    Route::get('/{event}', [EventController::class, 'show']);
+    Route::put('/{event}', [EventController::class, 'update']);
+    Route::delete('/{event}', [EventController::class, 'destroy']);
+
+    Route::prefix('{event}/projects')->group(function () {
+        Route::get('/', [ProjectEventController::class, 'index']);
+        Route::post('/', [ProjectEventController::class, 'store']);
+        Route::get('/{project}', [ProjectEventController::class, 'show']);
+        Route::delete('/{project}', [ProjectEventController::class, 'destroy']);
+    });
+});
+
 Route::prefix('projects')->group(function () {
     Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->get('/', [ProjectController::class, 'getAllProjects'])->name('projects.getAllProjects');
     Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->get('/{id}', [ProjectController::class, 'getProjectById'])->name('projects.getProjectById');
@@ -83,7 +84,6 @@ Route::prefix('projects')->group(function () {
 
     Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->put('/{id}/status', [ProjectController::class, 'updateStatus'])->name('projects.updateStatus');
     Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->put('/{id}', [ProjectController::class, 'updateProject'])->name('projects.updateProject');
-
 });
 
 Route::prefix('evaluations')->group(function () {
@@ -93,11 +93,9 @@ Route::prefix('evaluations')->group(function () {
     Route::put('/{id}', [EvaluationController::class, 'update']);
     Route::delete('/{id}', [EvaluationController::class, 'destroy']);
 
-
     Route::post('/{id}/cancel', [EvaluationController::class, 'cancel']);
     Route::post('/{id}/complete', [EvaluationController::class, 'completeEvaluation']);
     Route::post('/{id}/reassign', [EvaluationController::class, 'reassign']);
-
 
     Route::get('/project/{projectId}', [EvaluationController::class, 'byProject']);
     Route::get('/evaluator/{evaluatorId}', [EvaluationController::class, 'byEvaluator']);
@@ -105,12 +103,8 @@ Route::prefix('evaluations')->group(function () {
     Route::get('/project/{projectId}/metrics', [EvaluationController::class, 'metricsByStatus']);
     Route::get('/status/{status}', [EvaluationController::class, 'byStatus']);
 
-
     Route::get('/project/{projectId}/available-evaluators', [EvaluationController::class, 'availableEvaluators']);
-
-
     Route::post('/event/{eventId}/mass-assign', [EvaluationController::class, 'massAssign']);
-
 
     Route::get('/dashboard/stats', [EvaluationController::class, 'dashboardStats']);
     Route::get('/event/{eventId}/report', [EvaluationController::class, 'generateReport']);
@@ -132,5 +126,24 @@ Route::prefix('reports')->middleware(['auth:api', 'roles:Administrador'])->group
     Route::prefix('projects')->group(function () {
         Route::get('/with-authors', [ReportController::class, 'getProjectsWithAuthors']);
         Route::get('/scores', [ReportController::class, 'getProjectScores']);
+    });
+});
+
+Route::middleware(['auth:api'])->group(function () {
+
+    Route::middleware(['roles:Integrante Semillero'])->group(function () {
+        Route::get('/seedbeds', [SeedbedsController::class, 'index'])->name('semilleros.index');
+        Route::get('/seedbeds/{id}', [SeedbedsController::class, 'show'])->name('semilleros.show');
+    });
+
+
+    Route::middleware(['roles:Coordinador de Semillero'])->group(function () {
+        Route::post('/seedbeds', [SeedbedsController::class, 'store']);
+        Route::put('/seedbeds/{id}', [SeedbedsController::class, 'update']);
+        Route::delete('/seedbeds/{id}', [SeedbedsController::class, 'destroy']);
+        Route::get('/seedbeds/{id}/inscriptions', [InscriptionController::class, 'index']);
+        Route::post('/seedbeds/{id}/inscriptions', [InscriptionController::class, 'store']);
+        Route::put('/inscriptions/{id}', [InscriptionController::class, 'update']);
+        Route::delete('/inscriptions/{id}', [InscriptionController::class, 'destroy']);
     });
 });

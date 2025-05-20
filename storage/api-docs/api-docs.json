@@ -12,336 +12,12 @@
         {
             "url": "http://localhost:8000",
             "description": "Servidor Local"
+        },
+        {
+            "url": "/api"
         }
     ],
     "paths": {
-        "/api/auth/register": {
-            "post": {
-                "tags": [
-                    "Autenticación"
-                ],
-                "summary": "Registrar un nuevo usuario",
-                "operationId": "6aaed85c1374140defb82d788c59c543",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "name",
-                                    "email",
-                                    "password",
-                                    "password_confirmation",
-                                    "tipo"
-                                ],
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "Juan Pérez"
-                                    },
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "juan@ejemplo.com"
-                                    },
-                                    "password": {
-                                        "type": "string",
-                                        "format": "password",
-                                        "example": "123456"
-                                    },
-                                    "password_confirmation": {
-                                        "type": "string",
-                                        "format": "password",
-                                        "example": "123456"
-                                    },
-                                    "tipo": {
-                                        "type": "string",
-                                        "enum": [
-                                            "estudiante",
-                                            "profesor",
-                                            "administrador"
-                                        ],
-                                        "example": "estudiante"
-                                    },
-                                    "programa_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "rol": {
-                                        "type": "integer",
-                                        "example": 1
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Usuario registrado exitosamente",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Usuario registrado correctamente"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "user": {
-                                                    "type": "object"
-                                                },
-                                                "token": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Error de validación"
-                    }
-                }
-            }
-        },
-        "/api/auth/login": {
-            "post": {
-                "tags": [
-                    "Autenticación"
-                ],
-                "summary": "Iniciar sesión",
-                "operationId": "fc1512dc98dc9e42bd66aacb760c391e",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "email",
-                                    "password"
-                                ],
-                                "properties": {
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "juan@ejemplo.com"
-                                    },
-                                    "password": {
-                                        "type": "string",
-                                        "format": "password",
-                                        "example": "123456"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Login exitoso",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Login exitoso"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "user": {
-                                                    "type": "object"
-                                                },
-                                                "token": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Error de validación"
-                    }
-                }
-            }
-        },
-        "/api/auth/refresh": {
-            "post": {
-                "tags": [
-                    "Autenticación"
-                ],
-                "summary": "Refrescar token",
-                "operationId": "d5c975c4dacc9e06c3daff06a559a092",
-                "responses": {
-                    "200": {
-                        "description": "Token refrescado exitosamente",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Token refrescado exitosamente"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "user": {
-                                                    "type": "object"
-                                                },
-                                                "token": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "No autorizado"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/auth/me": {
-            "get": {
-                "tags": [
-                    "Autenticación"
-                ],
-                "summary": "Obtener información del usuario actual",
-                "operationId": "8cd9a06255417502ac524fdda2033854",
-                "responses": {
-                    "200": {
-                        "description": "Información del usuario",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Operación exitosa"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "integer",
-                                                    "example": 1
-                                                },
-                                                "nombre": {
-                                                    "type": "string",
-                                                    "example": "Juan Pérez"
-                                                },
-                                                "email": {
-                                                    "type": "string",
-                                                    "example": "juan@ejemplo.com"
-                                                },
-                                                "tipo": {
-                                                    "type": "string",
-                                                    "example": "estudiante"
-                                                },
-                                                "programa_id": {
-                                                    "type": "integer",
-                                                    "example": 1
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "No autorizado"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/auth/logout": {
-            "post": {
-                "tags": [
-                    "Autenticación"
-                ],
-                "summary": "Cerrar sesión",
-                "operationId": "e1778fee5a6f9c1efb7fc024f87a262f",
-                "responses": {
-                    "200": {
-                        "description": "Sesión cerrada exitosamente",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Sesión cerrada correctamente"
-                                        },
-                                        "data": {
-                                            "type": "null"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "No autorizado"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
         "/api/auth/forgot": {
             "post": {
                 "tags": [
@@ -3779,6 +3455,254 @@
                 ]
             }
         },
+        "/api/inscriptions": {
+            "get": {
+                "tags": [
+                    "Inscripciones"
+                ],
+                "summary": "Listar inscripciones",
+                "operationId": "0250ffc7483e5904b8dc7ce76a002f3c",
+                "parameters": [
+                    {
+                        "name": "semillero_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "usuario_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de inscripciones"
+                    },
+                    "404": {
+                        "description": "No se encontraron inscripciones"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Inscripciones"
+                ],
+                "summary": "Inscribir estudiante en un semillero",
+                "operationId": "f23d4010d13f4d9b01e9be052dd44a4d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "semillero_id",
+                                    "usuario_id"
+                                ],
+                                "properties": {
+                                    "semillero_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "usuario_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Inscripción exitosa"
+                    },
+                    "409": {
+                        "description": "Ya existe inscripción"
+                    },
+                    "422": {
+                        "description": "Datos inválidos"
+                    }
+                }
+            }
+        },
+        "/api/seedbeds": {
+            "get": {
+                "tags": [
+                    "CRUD Semilleros"
+                ],
+                "summary": "Listar semilleros",
+                "operationId": "7b80408baacc1a453d1a5562ec32fb05",
+                "responses": {
+                    "200": {
+                        "description": "Lista de semilleros"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "CRUD Semilleros"
+                ],
+                "summary": "Crear un nuevo semillero",
+                "operationId": "9033c31af8b5e6ff566208bfc287b5c0",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre",
+                                    "descripcion",
+                                    "programa_id",
+                                    "profesor_id"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Semillero TIC"
+                                    },
+                                    "descripcion": {
+                                        "type": "string",
+                                        "example": "Grupo de investigación en tecnología"
+                                    },
+                                    "programa_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "profesor_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Semillero creado correctamente"
+                    }
+                }
+            }
+        },
+        "/api/seedbeds/{id}": {
+            "get": {
+                "tags": [
+                    "CRUD Semilleros"
+                ],
+                "summary": "Consultar semillero por ID",
+                "operationId": "aca0ef5424e776a9f3760f913cf00633",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Datos del semillero"
+                    },
+                    "404": {
+                        "description": "Semillero no encontrado"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "CRUD Semilleros"
+                ],
+                "summary": "Actualizar un semillero existente",
+                "operationId": "2f291b521480041d4368c0483a21cd99",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre",
+                                    "descripcion",
+                                    "programa_id",
+                                    "profesor_id"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Semillero Redes"
+                                    },
+                                    "descripcion": {
+                                        "type": "string",
+                                        "example": "Nuevo enfoque en redes y protocolos"
+                                    },
+                                    "programa_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "profesor_id": {
+                                        "type": "integer",
+                                        "example": 8
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Semillero actualizado"
+                    },
+                    "404": {
+                        "description": "Semillero no encontrado"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "CRUD Semilleros"
+                ],
+                "summary": "Eliminar un semillero",
+                "operationId": "bf4639a036db7c2564339d383cf6d3e9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Semillero eliminado correctamente"
+                    },
+                    "404": {
+                        "description": "Semillero no encontrado"
+                    }
+                }
+            }
+        },
         "/api/universities": {
             "get": {
                 "tags": [
@@ -4980,12 +4904,20 @@
             "description": "API Endpoints for generating and managing reports"
         },
         {
+            "name": "CRUD Semilleros",
+            "description": "Operaciones relacionadas con el CRUD de semilleros"
+        },
+        {
             "name": "Universidades",
             "description": "Operaciones relacionadas con universidades"
         },
         {
             "name": "Usuarios",
             "description": "Operaciones CRUD para la gestión de usuarios"
+        },
+        {
+            "name": "Inscripciones",
+            "description": "Inscripciones"
         }
     ]
 }
