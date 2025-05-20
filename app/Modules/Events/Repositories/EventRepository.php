@@ -6,6 +6,7 @@ use App\Modules\Events\Models\EventModel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\DB;
 
 class EventRepository
 {
@@ -60,5 +61,14 @@ class EventRepository
         }
 
         return $query;
+    }
+    public function hasConflictCoodinator(int $evaluadorId)
+    {
+        return DB::table('Usuario')
+            ->join('Usuario_Rol', 'Usuario.id', '=', 'Usuario_Rol.usuario_id')
+            ->where('Usuario.id', $evaluadorId)
+            ->where('Usuario.tipo', 'profesor')
+            ->where('Usuario_Rol.rol_id', 5)
+            ->exists();
     }
 }

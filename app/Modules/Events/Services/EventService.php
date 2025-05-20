@@ -30,6 +30,7 @@ class EventService
     public function createEvent(array $data): EventModel
     {
         return DB::transaction(function () use ($data) {
+            $this->hasConflictCoodinator($data['coordinador_id']);
             $event = $this->eventRepository->create($data);
             
             if (!empty($data['actividades'])) {
@@ -65,6 +66,7 @@ class EventService
     public function updateEvent(int $id, array $data): EventModel
     {
         $event = $this->eventRepository->findOrFail($id);
+        $this->hasConflictCoodinator($data['coordinador_id']);
         
         if ($event->fecha_inicio <= now()) {
             throw new \InvalidArgumentException('No se puede editar un evento que ya ha comenzado.');
@@ -82,6 +84,13 @@ class EventService
         }
 
         $this->eventRepository->delete($event);
+    }
+
+    public function hasConflictCoodinator(int $evaluadorId)
+    {
+        if(!$this->eventRepository->hasConflictCoodinator($evaluadorId)) {
+            throw new \InvalidArgumentException('El coordinador no tiene un rol adecuado para evaluar.');
+        }
     }
 
 }
