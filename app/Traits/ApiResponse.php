@@ -2,28 +2,32 @@
 
 namespace App\Traits;
 
+use App\Enums\ResponseCode;
+
 trait ApiResponse
 {
-    protected function successResponse($data = null, string $message = 'Operación exitosa', int $code = 200)
+    protected function successResponse($data = null, ResponseCode $code = ResponseCode::SUCCESS, int $status = 200)
     {
         return response()->json([
-            'status'  => true,
-            'message' => $message,
-            'data'    => $data,
-        ], $code);
+            'status' => $status,
+            'code' => $code->value,
+            'message' => $code->value,
+            'data' => $data,
+        ], $status);
     }
 
-    protected function errorResponse(string $message = 'Error de servidor', int $code = 500, $errors = null)
+    protected function errorResponse(ResponseCode $code = ResponseCode::SERVER_ERROR, int $status = 500, $errors = null)
     {
         return response()->json([
-            'status'  => false,
-            'message' => $message,
-            'errors'  => $errors,
-        ], $code);
+            'status' => $status,
+            'code' => $code->value,
+            'message' => $code->value,
+            'errors' => $errors,
+        ], $status);
     }
 
-    protected function validationErrorResponse($errors, string $message = 'Errores de validación', int $code = 422)
+    protected function validationErrorResponse($errors, ResponseCode $code = ResponseCode::VALIDATION_ERROR, int $status = 422)
     {
-        return $this->errorResponse($message, $code, $errors);
+        return $this->errorResponse($code, $status, $errors);
     }
 }

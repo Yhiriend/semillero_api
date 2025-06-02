@@ -5,6 +5,7 @@ namespace App\Modules\Authentication\Controllers;
 use App\Modules\Authentication\Services\AuthService;
 use App\Modules\Users\Models\UserModel;
 use App\Traits\ApiResponse;
+use App\Enums\ResponseCode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
@@ -99,11 +100,11 @@ class AuthController
                 throw $e;
             }
 
-            return $this->successResponse($result, 'Usuario registrado correctamente', 201);
+            return $this->successResponse($result, ResponseCode::RESOURCE_CREATED, 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return $this->validationErrorResponse($e->errors());
         } catch (\Exception $e) {
-            return $this->errorResponse('Error al registrar el usuario: ' . $e->getMessage(), 500);
+            return $this->errorResponse(ResponseCode::REGISTRATION_ERROR, 500);
         }
     }
 
@@ -148,11 +149,11 @@ class AuthController
             $email = $data['email'];
             $password = $data['contraseña'];
             $result = $this->authService->login($email, $password);
-            return $this->successResponse($result, 'Login exitoso');
+            return $this->successResponse($result, ResponseCode::LOGIN_SUCCESS);
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e->errors());
         } catch (\Exception $e) {
-            return $this->errorResponse('Error al iniciar sesión: ' . $e->getMessage());
+            return $this->errorResponse(ResponseCode::INVALID_CREDENTIALS, 401);
         }
     }
 
@@ -187,11 +188,11 @@ class AuthController
     {
         try {
             $result = $this->authService->refreshToken();
-            return $this->successResponse($result, 'Token refrescado exitosamente');
+            return $this->successResponse($result, ResponseCode::TOKEN_REFRESHED);
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e->errors());
         } catch (\Exception $e) {
-            return $this->errorResponse('Error al refrescar el token: ' . $e->getMessage());
+            return $this->errorResponse(ResponseCode::EXPIRED_TOKEN, 401);
         }
     }
 
@@ -227,7 +228,7 @@ class AuthController
      */
     public function me()
     {
-        return $this->successResponse($this->authService->me());
+        return $this->successResponse($this->authService->me(), ResponseCode::DATA_LOADED);
     }
 
     /*
@@ -255,7 +256,7 @@ class AuthController
     public function logout()
     {
         $this->authService->logout();
-        return $this->successResponse(null, 'Sesión cerrada correctamente');
+        return $this->successResponse(null, ResponseCode::LOGOUT_SUCCESS);
     }
 
     /**
@@ -300,7 +301,7 @@ class AuthController
 
         return $this->successResponse([
             'reset_token' => $user->reset_token
-        ], 'Se ha enviado el token de recuperación.');
+        ], ResponseCode::EMAIL_SENT);
     }
 
     /**
@@ -351,12 +352,12 @@ class AuthController
             ->first();
 
         if (!$user) {
-            return $this->errorResponse('Token inválido o expirado.', 400);
+            return $this->errorResponse(ResponseCode::EXPIRED_TOKEN, 400);
         }
 
         // Verificar que el token sea del usuario autenticado
         if ($user->id !== Auth::id()) {
-            return $this->errorResponse('No autorizado para restablecer esta contraseña.', 403);
+            return $this->errorResponse(ResponseCode::FORBIDDEN, 403);
         }
 
         $user->contraseña = Hash::make($request->password);
@@ -364,7 +365,7 @@ class AuthController
         $user->reset_token_expire_at = null;
         $user->save();
 
-        return $this->successResponse(null, 'Contraseña actualizada correctamente.');
+        return $this->successResponse(null, ResponseCode::PASSWORD_RESET);
     }
 
 }
