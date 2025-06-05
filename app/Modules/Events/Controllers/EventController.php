@@ -11,6 +11,7 @@ use App\Modules\Events\Services\EventService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Traits\ApiResponse;
+use App\Enums\ResponseCode;
 
 /**
  * @OA\Tag(
@@ -141,18 +142,18 @@ class EventController extends Controller
 
             if ($events->isEmpty()) {
                 return $this->errorResponse(
-                    'No se encontraron eventos con los filtros proporcionados',
+                    ResponseCode::NOT_FOUND,
                     404
                 );
             }
 
             return $this->successResponse(
                 EventResource::collection($events),
-                'Listado de eventos obtenido correctamente'
+                ResponseCode::DATA_LOADED
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
-                'Error al obtener el listado de eventos: ' . $e->getMessage(),
+                ResponseCode::SERVER_ERROR,
                 500
             );
         }
@@ -198,12 +199,12 @@ class EventController extends Controller
             $event = $this->eventService->createEvent($request->validated());
             return $this->successResponse(
                 new EventResource($event),
-                'Evento creado exitosamente',
+                ResponseCode::RESOURCE_CREATED,
                 201
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
-                'Error al crear el evento: ' . $e->getMessage(),
+                ResponseCode::RESOURCE_ERROR,
                 500
             );
         }
@@ -252,16 +253,16 @@ class EventController extends Controller
             $event = $this->eventService->findEvent($id);
             return $this->successResponse(
                 new EventResource($event),
-                'Evento encontrado'
+                ResponseCode::DATA_LOADED
             );
         } catch (ModelNotFoundException $e) {
             return $this->errorResponse(
-                'Evento no encontrado',
+                ResponseCode::NOT_FOUND,
                 404
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
-                'Error al obtener el evento: ' . $e->getMessage(),
+                ResponseCode::SERVER_ERROR,
                 500
             );
         }
@@ -319,16 +320,16 @@ class EventController extends Controller
             $updatedEvent = $this->eventService->updateEvent($id, $request->validated());
             return $this->successResponse(
                 new EventResource($updatedEvent),
-                'Evento actualizado correctamente'
+                ResponseCode::RESOURCE_UPDATED
             );
         } catch (ModelNotFoundException $e) {
             return $this->errorResponse(
-                'Evento no encontrado',
+                ResponseCode::NOT_FOUND,
                 404
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
-                'Error al actualizar el evento: ' . $e->getMessage(),
+                ResponseCode::RESOURCE_ERROR,
                 500
             );
         }
@@ -374,17 +375,17 @@ class EventController extends Controller
             $this->eventService->deleteEvent($id);
             return $this->successResponse(
                 null,
-                'Evento eliminado correctamente',
+                ResponseCode::RESOURCE_DELETED,
                 204
             );
         } catch (ModelNotFoundException $e) {
             return $this->errorResponse(
-                'Evento no encontrado',
+                ResponseCode::NOT_FOUND,
                 404
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
-                'Error al eliminar el evento: ' . $e->getMessage(),
+                ResponseCode::RESOURCE_ERROR,
                 500
             );
         }

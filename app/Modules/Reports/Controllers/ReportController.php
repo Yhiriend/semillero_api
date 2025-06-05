@@ -11,6 +11,7 @@ use App\Modules\Projects\Models\ProjectModel;
 use App\Modules\Reports\Services\CertificateService;
 use App\Modules\Reports\Services\EventService;
 use App\Traits\ApiResponse;
+use App\Enums\ResponseCode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -79,9 +80,9 @@ class ReportController extends Controller
                 'coordinador:id,nombre,email,tipo'
             ])->get();
 
-            return $this->successResponse($projects, 'Lista de proyectos con sus autores obtenida exitosamente');
+            return $this->successResponse($projects, ResponseCode::DATA_LOADED);
         } catch (\Exception $e) {
-            return $this->errorResponse('Error al obtener los proyectos: ' . $e->getMessage(), 500);
+            return $this->errorResponse(ResponseCode::SERVER_ERROR, 500);
         }
     }
 
@@ -133,9 +134,9 @@ class ReportController extends Controller
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e->errors());
         } catch (ModelNotFoundException $e) {
-            return $this->errorResponse('Usuario o semillero no encontrado', 404);
+            return $this->errorResponse(ResponseCode::NOT_FOUND, 404);
         } catch (\Exception $e) {
-            return $this->errorResponse('Error al generar el certificado: ' . $e->getMessage(), 500);
+            return $this->errorResponse(ResponseCode::SERVER_ERROR, 500);
         }
     }
     
@@ -176,14 +177,14 @@ class ReportController extends Controller
             $report = $this->certificateService->getEventReport($eventoId);
 
             if (empty($report)) {
-                return $this->errorResponse('No se encontraron actividades para este evento', 404);
+                return $this->errorResponse(ResponseCode::NOT_FOUND, 404);
             }
 
-            return $this->successResponse($report, 'Reporte del evento generado exitosamente');
+            return $this->successResponse($report, ResponseCode::DATA_LOADED);
         } catch (ModelNotFoundException $e) {
-            return $this->errorResponse('Evento no encontrado', 404);
+            return $this->errorResponse(ResponseCode::NOT_FOUND, 404);
         } catch (\Exception $e) {
-            return $this->errorResponse('Error al generar el reporte: ' . $e->getMessage(), 500);
+            return $this->errorResponse(ResponseCode::SERVER_ERROR, 500);
         }
     }
 
@@ -224,12 +225,12 @@ class ReportController extends Controller
             $scores = $this->certificateService->getProjectScores();
 
             if (empty($scores)) {
-                return $this->errorResponse('No se encontraron evaluaciones completadas.', 404);
+                return $this->errorResponse(ResponseCode::NOT_FOUND, 404);
             }
 
-            return $this->successResponse($scores, 'Calificaciones de proyectos obtenidas exitosamente');
+            return $this->successResponse($scores, ResponseCode::DATA_LOADED);
         } catch (\Exception $e) {
-            return $this->errorResponse('Error al obtener calificaciones: ' . $e->getMessage(), 500);
+            return $this->errorResponse(ResponseCode::SERVER_ERROR, 500);
         }
     }
 
@@ -283,7 +284,7 @@ class ReportController extends Controller
             $evento = DB::table('Evento')->where('id', $eventoId)->first();
 
             if (!$evento) {
-                return $this->errorResponse('Evento no encontrado', 404);
+                return $this->errorResponse(ResponseCode::NOT_FOUND, 404);
             }
 
             $semillero = DB::table('Semillero')
@@ -291,7 +292,7 @@ class ReportController extends Controller
                 ->first();
 
             if (!$semillero) {
-                return $this->errorResponse('No se encontró semillero asociado al coordinador del evento', 404);
+                return $this->errorResponse(ResponseCode::NOT_FOUND, 404);
             }
 
             $participantes = DB::table('Semillero_usuario as su')
@@ -323,9 +324,9 @@ class ReportController extends Controller
                 'semillero'    => $semillero->nombre,
                 'total'        => $certificados->count(),
                 'certificados' => $certificados,
-            ], 'Certificados generados exitosamente');
+            ], ResponseCode::DATA_LOADED);
         } catch (\Exception $e) {
-            return $this->errorResponse('Error al generar los certificados: ' . $e->getMessage(), 500);
+            return $this->errorResponse(ResponseCode::SERVER_ERROR, 500);
         }
     }
 
@@ -395,9 +396,9 @@ class ReportController extends Controller
             return $this->successResponse([
                 'total' => $actividades->count(),
                 'actividades' => $actividades
-            ], 'Actividades obtenidas exitosamente');
+            ], ResponseCode::DATA_LOADED);
         } catch (\Exception $e) {
-            return $this->errorResponse('Error al consultar las actividades: ' . $e->getMessage(), 500);
+            return $this->errorResponse(ResponseCode::SERVER_ERROR, 500);
         }
     }
 
@@ -453,7 +454,7 @@ class ReportController extends Controller
             $certificado = $this->certificateService->generarCertificado($proyectoId, $eventoId);
 
             if (!$certificado) {
-                return $this->errorResponse('No hay evaluaciones completadas para este proyecto en el evento.', 404);
+                return $this->errorResponse(ResponseCode::NOT_FOUND, 404);
             }
 
             return $this->successResponse([
@@ -465,11 +466,11 @@ class ReportController extends Controller
                     'puntuacion' => $eval->puntuacion,
                     'comentarios' => $eval->comentarios,
                 ], $certificado->evaluations),
-            ], 'Detalles del certificado obtenidos exitosamente');
+            ], ResponseCode::DATA_LOADED);
         } catch (ModelNotFoundException $e) {
-            return $this->errorResponse('Proyecto o evento no encontrado', 404);
+            return $this->errorResponse(ResponseCode::NOT_FOUND, 404);
         } catch (\Exception $e) {
-            return $this->errorResponse('Error al obtener los detalles del certificado: ' . $e->getMessage(), 500);
+            return $this->errorResponse(ResponseCode::SERVER_ERROR, 500);
         }
     }
 }
