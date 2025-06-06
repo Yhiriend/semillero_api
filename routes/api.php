@@ -13,6 +13,8 @@ use App\Modules\Evaluations\Controllers\EvaluationController;
 use App\Modules\Reports\Controllers\ReportController;
 use App\Modules\Seedbeds\Controllers\SeedbedsController;
 use App\Modules\Seedbeds\Controllers\InscriptionController;
+use App\Modules\Reports\Controllers\EvaluatorController;
+use App\Modules\Reports\Controllers\EventInscriptionController;
 
 
 Route::prefix('auth')->group(function () {
@@ -60,9 +62,12 @@ Route::prefix('programs')->middleware(['auth:api', 'roles:Administrador'])->grou
     Route::delete('/{program}', [ProgramController::class, 'destroy']);
 });
 
-Route::prefix('events')->middleware(['auth:api', 'roles:Coordinador de Eventos'])->group(function () {
+Route::prefix('events')->middleware(['auth:api', 'roles:Coordinador de Eventos,Administrador'])->group(function () {
     Route::get('/', [EventController::class, 'index']);
     Route::post('/', [EventController::class, 'store']);
+    Route::get('/projects', [EventController::class, 'getProjects']);
+    Route::get('/coordinators', [EventController::class, 'getCoordinators']);
+    Route::get('/responsables', [EventController::class, 'getResponsables']);
     Route::get('/{event}', [EventController::class, 'show']);
     Route::put('/{event}', [EventController::class, 'update']);
     Route::delete('/{event}', [EventController::class, 'destroy']);
@@ -121,11 +126,16 @@ Route::prefix('reports')->middleware(['auth:api', 'roles:Administrador'])->group
     Route::prefix('events')->group(function () {
         Route::get('/{eventId}/report', [ReportController::class, 'getEventReport']);
         Route::get('/{eventId}/activities', [ReportController::class, 'consultarActividades']);
+        Route::get('/enrolled-students', [EventInscriptionController::class, 'getEnrolledStudents']);
     });
 
     Route::prefix('projects')->group(function () {
         Route::get('/with-authors', [ReportController::class, 'getProjectsWithAuthors']);
         Route::get('/scores', [ReportController::class, 'getProjectScores']);
+    });
+
+    Route::prefix('evaluators')->group(function () {
+        Route::get('/with-projects', [EvaluatorController::class, 'index']);
     });
 });
 
