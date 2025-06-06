@@ -159,7 +159,8 @@ class EventController extends Controller
             }
 
             return $this->successResponse(
-                EventResource::collection($events)
+                EventResource::collection($events),
+                ResponseCode::SUCCESS
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
@@ -266,7 +267,8 @@ class EventController extends Controller
         try {
             $event = $this->eventService->findEvent($id);
             return $this->successResponse(
-                new EventResource($event)
+                new EventResource($event),
+                ResponseCode::SUCCESS
             );
         } catch (ModelNotFoundException $e) {
             return $this->errorResponse(
@@ -334,7 +336,8 @@ class EventController extends Controller
         try {
             $updatedEvent = $this->eventService->updateEvent($id, $request->validated());
             return $this->successResponse(
-                new EventResource($updatedEvent)
+                new EventResource($updatedEvent),
+                ResponseCode::SUCCESS
             );
         } catch (ModelNotFoundException $e) {
             return $this->errorResponse(
@@ -399,6 +402,11 @@ class EventController extends Controller
                 ResponseCode::NOT_FOUND,
                 404
             );
+        } catch (ValidationException $e) {
+            return $this->validationErrorResponse(
+                $e->errors(),
+                ResponseCode::VALIDATION_ERROR
+            );
         } catch (\Exception $e) {
             return $this->errorResponse(
                 ResponseCode::SERVER_ERROR,
@@ -408,50 +416,36 @@ class EventController extends Controller
         }
     }
 
-    public function getProjects(Request $request)
-    {
-        try {
-
-        $validated = $request->validate([
-            'nombre' => 'nullable|string|max:100'
-        ]);
-
-        $projects = $this->eventService->getProjects($validated['nombre'] ?? null);
-        
-            return $this->successResponse(
-                $projects,
-                ResponseCode::SUCCESS,
-                200
-            );
-        } catch (\Exception $e) {
-            return $this->errorResponse(
-                ResponseCode::SERVER_ERROR,
-                500,
-                'Error al obtener los proyectos: ' . $e->getMessage()
-            );
-        }catch(ValidationException $e) {
-            return $this->errorResponse(
-                ResponseCode::VALIDATION_ERROR,
-                422,
-                'Error de validación: ' . $e->getMessage(),
-            );
-        }
-    }
-
-    public function getCoordinators()
+    public function getCoordinators(): JsonResponse
     {
         try {
             $coordinators = $this->eventService->getCoordinators();
             return $this->successResponse(
                 $coordinators,
-                ResponseCode::SUCCESS,
-                200
+                ResponseCode::SUCCESS
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
                 ResponseCode::SERVER_ERROR,
                 500,
                 'Error al obtener los coordinadores: ' . $e->getMessage()
+            );
+        }
+    }
+
+    public function getProjects(Request $request): JsonResponse
+    {
+        try {
+            $projects = $this->eventService->getProjects($request->get('nombre'));
+            return $this->successResponse(
+                $projects,
+                ResponseCode::SUCCESS
+            );
+        } catch (\Exception $e) {
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                500,
+                'Error al obtener los proyectos: ' . $e->getMessage()
             );
         }
     }
