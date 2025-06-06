@@ -71,4 +71,25 @@ class EventRepository
             ->where('Usuario_Rol.rol_id', 5)
             ->exists();
     }
+
+    public function getProjects($name = null){
+        return DB::table('proyecto')
+        ->select('id', 'titulo')
+        ->where(function ($query) use ($name) {
+            if ($name) {
+                $query->where('titulo', 'like', '%' . $name . '%');
+            }
+        })
+        ->get();
+    }
+
+    public function getCoordinators()
+    {
+        return DB::table('usuario')
+            ->join('usuario_rol', 'usuario.id', '=', 'usuario_rol.usuario_id')
+            ->where('usuario.tipo', 'profesor')
+            ->where('usuario_rol.rol_id', 5)
+            ->select('usuario.id', 'usuario.nombre')
+            ->get();
+    }
 }

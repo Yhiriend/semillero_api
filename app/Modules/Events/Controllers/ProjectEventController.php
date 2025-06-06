@@ -9,6 +9,7 @@ use App\Modules\Events\Services\ProjectEventService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Traits\ApiResponse;
+use App\Enums\ResponseCode;
 
 /**
  * @OA\Tag(
@@ -49,6 +50,29 @@ use App\Traits\ApiResponse;
  *     @OA\Property(property="fecha_inscripcion", type="string", format="date-time", description="Fecha de inscripción del proyecto"),
  *     @OA\Property(property="observaciones", type="string", maxLength=500, nullable=true, description="Observaciones sobre la inscripción")
  * )
+ * 
+ * @OA\Schema(
+ *     schema="ErrorResponse",
+ *     @OA\Property(property="status", type="integer", example=500),
+ *     @OA\Property(property="code", type="string", example="SERVER_ERROR"),
+ *     @OA\Property(property="message", type="string", example="SERVER_ERROR"),
+ *     @OA\Property(property="errors", type="object", nullable=true)
+ * )
+ * 
+ * @OA\Schema(
+ *     schema="ValidationErrorResponse",
+ *     @OA\Property(property="status", type="integer", example=422),
+ *     @OA\Property(property="code", type="string", example="VALIDATION_ERROR"),
+ *     @OA\Property(property="message", type="string", example="VALIDATION_ERROR"),
+ *     @OA\Property(
+ *         property="errors",
+ *         type="object",
+ *         @OA\AdditionalProperties(
+ *             type="array",
+ *             @OA\Items(type="string")
+ *         )
+ *     )
+ * )
  */
 class ProjectEventController extends Controller
 {
@@ -76,14 +100,20 @@ class ProjectEventController extends Controller
      *         response=200,
      *         description="Lista de proyectos obtenida correctamente",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Proyectos del evento obtenidos correctamente"),
+     *             @OA\Property(property="status", type="integer", example=200),
+     *             @OA\Property(property="code", type="string", example="SUCCESS"),
+     *             @OA\Property(property="message", type="string", example="SUCCESS"),
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
      *                 @OA\Items(ref="#/components/schemas/ProjectEventResource")
      *             )
      *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="No se encontraron proyectos",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
      *     ),
      *     @OA\Response(
      *         response=500,
@@ -99,18 +129,18 @@ class ProjectEventController extends Controller
 
             if ($projects->isEmpty()) {
                 return $this->errorResponse(
-                    'No se encontraron proyectos asociados a este evento',
+                    ResponseCode::NOT_FOUND,
                     404
                 );
             }
             return $this->successResponse(
-                ProjectEventResource::collection($projects),
-                'Proyectos del evento obtenidos correctamente'
+                ProjectEventResource::collection($projects)
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
-                'Error al obtener los proyectos: ' . $e->getMessage(),
-                500
+                ResponseCode::SERVER_ERROR,
+                500,
+                'Error al obtener los proyectos: ' . $e->getMessage()
             );
         }
     }
@@ -136,8 +166,9 @@ class ProjectEventController extends Controller
      *         response=201,
      *         description="Proyecto asociado al evento exitosamente",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Proyecto asociado al evento exitosamente"),
+     *             @OA\Property(property="status", type="integer", example=201),
+     *             @OA\Property(property="code", type="string", example="SUCCESS"),
+     *             @OA\Property(property="message", type="string", example="SUCCESS"),
      *             @OA\Property(
      *                 property="data",
      *                 ref="#/components/schemas/ProjectEventResource"
@@ -171,18 +202,19 @@ class ProjectEventController extends Controller
             );
             return $this->successResponse(
                 new ProjectEventResource($relation),
-                'Proyecto asociado al evento exitosamente',
+                ResponseCode::SUCCESS,
                 201
             );
         } catch (ModelNotFoundException $e) {
             return $this->errorResponse(
-                'Evento o proyecto no encontrado',
+                ResponseCode::NOT_FOUND,
                 404
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
-                'Error al asociar el proyecto: ' . $e->getMessage(),
-                500
+                ResponseCode::SERVER_ERROR,
+                500,
+                'Error al asociar el proyecto: ' . $e->getMessage()
             );
         }
     }
@@ -211,8 +243,9 @@ class ProjectEventController extends Controller
      *         response=200,
      *         description="Detalles de la relación obtenidos correctamente",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Relación evento-proyecto obtenida"),
+     *             @OA\Property(property="status", type="integer", example=200),
+     *             @OA\Property(property="code", type="string", example="SUCCESS"),
+     *             @OA\Property(property="message", type="string", example="SUCCESS"),
      *             @OA\Property(
      *                 property="data",
      *                 ref="#/components/schemas/ProjectEventResource"
@@ -236,18 +269,18 @@ class ProjectEventController extends Controller
         try {
             $relation = $this->service->getProjectEventRelation($eventId, $projectId);
             return $this->successResponse(
-                new ProjectEventResource($relation),
-                'Relación evento-proyecto obtenida'
+                new ProjectEventResource($relation)
             );
         } catch (ModelNotFoundException $e) {
             return $this->errorResponse(
-                'Relación no encontrada',
+                ResponseCode::NOT_FOUND,
                 404
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
-                'Error al obtener la relación: ' . $e->getMessage(),
-                500
+                ResponseCode::SERVER_ERROR,
+                500,
+                'Error al obtener la relación: ' . $e->getMessage()
             );
         }
     }
@@ -276,8 +309,9 @@ class ProjectEventController extends Controller
      *         response=204,
      *         description="Proyecto desvinculado correctamente",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Proyecto desvinculado del evento correctamente"),
+     *             @OA\Property(property="status", type="integer", example=204),
+     *             @OA\Property(property="code", type="string", example="SUCCESS"),
+     *             @OA\Property(property="message", type="string", example="SUCCESS"),
      *             @OA\Property(property="data", type="null")
      *         )
      *     ),
@@ -302,18 +336,19 @@ class ProjectEventController extends Controller
             }
             return $this->successResponse(
                 null,
-                'Proyecto desvinculado del evento correctamente',
+                ResponseCode::SUCCESS,
                 204
             );
         } catch (ModelNotFoundException $e) {
             return $this->errorResponse(
-                'Relación no encontrada',
+                ResponseCode::NOT_FOUND,
                 404
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
-                'Error al desvincular el proyecto: ' . $e->getMessage(),
-                500
+                ResponseCode::SERVER_ERROR,
+                500,
+                'Error al desvincular el proyecto: ' . $e->getMessage()
             );
         }
     }

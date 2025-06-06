@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Modules\Events\Resources;
 
@@ -14,8 +14,16 @@ class ProjectEventResource extends JsonResource
             'proyecto_id' => $this->proyecto_id,
             'fecha_inscripcion' => $this->fecha_inscripcion->toDateTimeString(),
             'observaciones' => $this->observaciones,
-            'evento' => $this->whenLoaded('event'),
-            'proyecto' => $this->whenLoaded('project'),
+            'nombre_evento' => $this->event->nombre ?? null,
+            'nombre_proyecto' => $this->project->titulo ?? null,
+            
+            'evento' => [
+                'nombre' => $this->event->nombre ?? null,
+                'fecha_inicio' => $this->event->fecha_inicio ?? null,
+            ],
+            'proyecto' => [
+                'nombre' => $this->project->titulo ?? null,
+            ]
         ];
     }
 }

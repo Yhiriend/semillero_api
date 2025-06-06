@@ -8,9 +8,12 @@ use App\Modules\Events\Requests\ListEventsRequest;
 use App\Modules\Events\Requests\UpdateEventRequest;
 use App\Modules\Events\Resources\EventResource;
 use App\Modules\Events\Services\EventService;
+use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Traits\ApiResponse;
+use App\Enums\ResponseCode;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @OA\Tag(
@@ -60,14 +63,17 @@ use App\Traits\ApiResponse;
  * 
  * @OA\Schema(
  *     schema="ErrorResponse",
- *     @OA\Property(property="status", type="boolean", example=false),
- *     @OA\Property(property="message", type="string", example="Error al procesar la solicitud")
+ *     @OA\Property(property="status", type="integer", example=500),
+ *     @OA\Property(property="code", type="string", example="SERVER_ERROR"),
+ *     @OA\Property(property="message", type="string", example="SERVER_ERROR"),
+ *     @OA\Property(property="errors", type="object", nullable=true)
  * )
  * 
  * @OA\Schema(
  *     schema="ValidationErrorResponse",
- *     @OA\Property(property="status", type="boolean", example=false),
- *     @OA\Property(property="message", type="string", example="Errores de validación"),
+ *     @OA\Property(property="status", type="integer", example=422),
+ *     @OA\Property(property="code", type="string", example="VALIDATION_ERROR"),
+ *     @OA\Property(property="message", type="string", example="VALIDATION_ERROR"),
  *     @OA\Property(
  *         property="errors",
  *         type="object",
@@ -118,14 +124,20 @@ class EventController extends Controller
      *         response=200,
      *         description="Listado de eventos obtenido correctamente",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Listado de eventos obtenido correctamente"),
+     *             @OA\Property(property="status", type="integer", example=200),
+     *             @OA\Property(property="code", type="string", example="SUCCESS"),
+     *             @OA\Property(property="message", type="string", example="SUCCESS"),
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
      *                 @OA\Items(ref="#/components/schemas/EventResource")
      *             )
      *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="No se encontraron eventos",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
      *     ),
      *     @OA\Response(
      *         response=500,
@@ -141,19 +153,19 @@ class EventController extends Controller
 
             if ($events->isEmpty()) {
                 return $this->errorResponse(
-                    'No se encontraron eventos con los filtros proporcionados',
+                    ResponseCode::NOT_FOUND,
                     404
                 );
             }
 
             return $this->successResponse(
-                EventResource::collection($events),
-                'Listado de eventos obtenido correctamente'
+                EventResource::collection($events)
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
-                'Error al obtener el listado de eventos: ' . $e->getMessage(),
-                500
+                ResponseCode::SERVER_ERROR,
+                500,
+                'Error al obtener el listado de eventos: ' . $e->getMessage()
             );
         }
     }
@@ -172,8 +184,9 @@ class EventController extends Controller
      *         response=201,
      *         description="Evento creado exitosamente",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Evento creado exitosamente"),
+     *             @OA\Property(property="status", type="integer", example=201),
+     *             @OA\Property(property="code", type="string", example="SUCCESS"),
+     *             @OA\Property(property="message", type="string", example="SUCCESS"),
      *             @OA\Property(
      *                 property="data",
      *                 ref="#/components/schemas/EventResource"
@@ -195,16 +208,17 @@ class EventController extends Controller
     public function store(StoreEventRequest $request): JsonResponse
     {
         try {
-            $event = $this->eventService->createEvent($request->validated());
+            $event = $this->eventService->createEvent($request->all());
             return $this->successResponse(
                 new EventResource($event),
-                'Evento creado exitosamente',
+                ResponseCode::SUCCESS,
                 201
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
-                'Error al crear el evento: ' . $e->getMessage(),
-                500
+                ResponseCode::SERVER_ERROR,
+                500,
+                'Error al crear el evento: ' . $e->getMessage()
             );
         }
     }
@@ -226,8 +240,9 @@ class EventController extends Controller
      *         response=200,
      *         description="Evento encontrado",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Evento encontrado"),
+     *             @OA\Property(property="status", type="integer", example=200),
+     *             @OA\Property(property="code", type="string", example="SUCCESS"),
+     *             @OA\Property(property="message", type="string", example="SUCCESS"),
      *             @OA\Property(
      *                 property="data",
      *                 ref="#/components/schemas/EventResource"
@@ -251,18 +266,18 @@ class EventController extends Controller
         try {
             $event = $this->eventService->findEvent($id);
             return $this->successResponse(
-                new EventResource($event),
-                'Evento encontrado'
+                new EventResource($event)
             );
         } catch (ModelNotFoundException $e) {
             return $this->errorResponse(
-                'Evento no encontrado',
+                ResponseCode::NOT_FOUND,
                 404
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
-                'Error al obtener el evento: ' . $e->getMessage(),
-                500
+                ResponseCode::SERVER_ERROR,
+                500,
+                'Error al obtener el evento: ' . $e->getMessage()
             );
         }
     }
@@ -288,8 +303,9 @@ class EventController extends Controller
      *         response=200,
      *         description="Evento actualizado correctamente",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Evento actualizado correctamente"),
+     *             @OA\Property(property="status", type="integer", example=200),
+     *             @OA\Property(property="code", type="string", example="SUCCESS"),
+     *             @OA\Property(property="message", type="string", example="SUCCESS"),
      *             @OA\Property(
      *                 property="data",
      *                 ref="#/components/schemas/EventResource"
@@ -318,18 +334,18 @@ class EventController extends Controller
         try {
             $updatedEvent = $this->eventService->updateEvent($id, $request->validated());
             return $this->successResponse(
-                new EventResource($updatedEvent),
-                'Evento actualizado correctamente'
+                new EventResource($updatedEvent)
             );
         } catch (ModelNotFoundException $e) {
             return $this->errorResponse(
-                'Evento no encontrado',
+                ResponseCode::NOT_FOUND,
                 404
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
-                'Error al actualizar el evento: ' . $e->getMessage(),
-                500
+                ResponseCode::SERVER_ERROR,
+                500,
+                'Error al actualizar el evento: ' . $e->getMessage()
             );
         }
     }
@@ -351,8 +367,9 @@ class EventController extends Controller
      *         response=204,
      *         description="Evento eliminado correctamente",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Evento eliminado correctamente"),
+     *             @OA\Property(property="status", type="integer", example=204),
+     *             @OA\Property(property="code", type="string", example="SUCCESS"),
+     *             @OA\Property(property="message", type="string", example="SUCCESS"),
      *             @OA\Property(property="data", type="null")
      *         )
      *     ),
@@ -374,20 +391,68 @@ class EventController extends Controller
             $this->eventService->deleteEvent($id);
             return $this->successResponse(
                 null,
-                'Evento eliminado correctamente',
+                ResponseCode::SUCCESS,
                 204
             );
         } catch (ModelNotFoundException $e) {
             return $this->errorResponse(
-                'Evento no encontrado',
+                ResponseCode::NOT_FOUND,
                 404
             );
         } catch (\Exception $e) {
             return $this->errorResponse(
-                'Error al eliminar el evento: ' . $e->getMessage(),
-                500
+                ResponseCode::SERVER_ERROR,
+                500,
+                'Error al eliminar el evento: ' . $e->getMessage()
             );
         }
     }
 
+    public function getProjects(Request $request)
+    {
+        try {
+
+        $validated = $request->validate([
+            'nombre' => 'nullable|string|max:100'
+        ]);
+
+        $projects = $this->eventService->getProjects($validated['nombre'] ?? null);
+        
+            return $this->successResponse(
+                $projects,
+                ResponseCode::SUCCESS,
+                200
+            );
+        } catch (\Exception $e) {
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                500,
+                'Error al obtener los proyectos: ' . $e->getMessage()
+            );
+        }catch(ValidationException $e) {
+            return $this->errorResponse(
+                ResponseCode::VALIDATION_ERROR,
+                422,
+                'Error de validación: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    public function getCoordinators()
+    {
+        try {
+            $coordinators = $this->eventService->getCoordinators();
+            return $this->successResponse(
+                $coordinators,
+                ResponseCode::SUCCESS,
+                200
+            );
+        } catch (\Exception $e) {
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                500,
+                'Error al obtener los coordinadores: ' . $e->getMessage()
+            );
+        }
+    }
 }
