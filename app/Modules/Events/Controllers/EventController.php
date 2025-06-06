@@ -416,10 +416,10 @@ class EventController extends Controller
         }
     }
 
-    public function getCoordinators(): JsonResponse
+    public function getCoordinators(Request $request): JsonResponse
     {
         try {
-            $coordinators = $this->eventService->getCoordinators();
+            $coordinators = $this->eventService->getCoordinators($request ->get('nombre'));
             return $this->successResponse(
                 $coordinators,
                 ResponseCode::SUCCESS
@@ -446,6 +446,23 @@ class EventController extends Controller
                 ResponseCode::SERVER_ERROR,
                 500,
                 'Error al obtener los proyectos: ' . $e->getMessage()
+            );
+        }
+    }
+
+    public function getResponsables(Request $request): JsonResponse
+    {
+        try {
+            $responsables = $this->eventService->getResponsables($request->get('nombre'));
+            return $this->successResponse(
+                $responsables,
+                ResponseCode::SUCCESS
+            );
+        } catch (\Exception $e) {
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                500,
+                'Error al obtener los responsables: ' . $e->getMessage()
             );
         }
     }

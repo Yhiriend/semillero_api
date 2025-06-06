@@ -72,23 +72,41 @@ class EventRepository
             ->exists();
     }
 
-    public function getProjects($name = null){
+    public function getProjects($name = null)
+    {
         return DB::table('proyecto')
-        ->select('id', 'titulo')
-        ->where(function ($query) use ($name) {
-            if ($name) {
-                $query->where('titulo', 'like', '%' . $name . '%');
-            }
-        })
-        ->get();
+            ->select('id', 'titulo')
+            ->where(function ($query) use ($name) {
+                if ($name) {
+                    $query->where('titulo', 'like', '%' . $name . '%');
+                }
+            })
+            ->get();
     }
 
-    public function getCoordinators()
+    public function getCoordinators($name = null)
     {
         return DB::table('usuario')
             ->join('usuario_rol', 'usuario.id', '=', 'usuario_rol.usuario_id')
             ->where('usuario.tipo', 'profesor')
             ->where('usuario_rol.rol_id', 5)
+            ->where(function ($query) use ($name) {
+                if ($name) {
+                    $query->where('usuario.nombre', 'like', '%' . $name . '%');
+                }
+            })
+            ->select('usuario.id', 'usuario.nombre')
+            ->get();
+    }
+
+    public function getResponsables($name = null)
+    {
+        return DB::table('usuario')
+            ->join('usuario_rol', 'usuario.id', '=', 'usuario_rol.usuario_id')
+            ->whereIn('usuario.tipo', ['profesor', 'estudiante']) 
+            ->when($name, function ($query, $name) { 
+                return $query->where('usuario.nombre', 'like', '%' . $name . '%');
+            })
             ->select('usuario.id', 'usuario.nombre')
             ->get();
     }

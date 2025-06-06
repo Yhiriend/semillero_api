@@ -98,9 +98,14 @@ class EventService
         return $this->eventRepository->getProjects($name);
     }
 
-    public function getCoordinators()
+    public function getCoordinators($name = null)
     {
-        return $this->eventRepository->getCoordinators();
+        return $this->eventRepository->getCoordinators( $name);
+    }
+
+    public function getResponsables($name = null)
+    {
+        return $this->eventRepository->getResponsables($name);
     }
 
 }
