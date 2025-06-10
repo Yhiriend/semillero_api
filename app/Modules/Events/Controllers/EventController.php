@@ -149,17 +149,23 @@ class EventController extends Controller
     public function index(ListEventsRequest $request): JsonResponse
     {
         try {
-            $events = $this->eventService->getFilteredEvents($request->validated());
-
-            if ($events->isEmpty()) {
-                return $this->errorResponse(
-                    ResponseCode::NOT_FOUND,
-                    404
-                );
-            }
-
+            $events = $this->eventService->getFilteredEvents($request->all());
+            
             return $this->successResponse(
-                EventResource::collection($events),
+                [
+                    'data' => $events->items(),
+                    'pagination' => [
+                        'total' => $events->total(),
+                        'per_page' => $events->perPage(),
+                        'current_page' => $events->currentPage(),
+                        'last_page' => $events->lastPage(),
+                        'from' => $events->firstItem(),
+                        'to' => $events->lastItem(),
+                        'has_more_pages' => $events->hasMorePages(),
+                        'next_page_url' => $events->nextPageUrl(),
+                        'prev_page_url' => $events->previousPageUrl()
+                    ]
+                ],
                 ResponseCode::SUCCESS
             );
         } catch (\Exception $e) {

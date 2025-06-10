@@ -4,17 +4,42 @@ namespace App\Modules\Events\Repositories;
 
 use App\Modules\Events\Models\EventModel;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class EventRepository
 {
-    public function getFilteredEvents(array $filters): Collection
+    public function getFilteredEvents(array $filters): LengthAwarePaginator
     {
-        return $this->buildQuery($filters)
-            ->with(['coordinador', 'activities.responsables'])
-            ->get();
+        $perPage = isset($filters['per_page']) ? (int) $filters['per_page'] : 10;
+        $page = isset($filters['page']) ? (int) $filters['page'] : 1;
+        
+        $query = EventModel::query()
+            ->select('id', 'nombre', 'descripcion', 'coordinador_id', 'fecha_inicio', 'fecha_fin', 'ubicacion')
+            ->with([
+                'coordinador:id,nombre',
+                'activities:id,titulo,evento_id',
+                'activities.responsables:id,nombre'
+            ]);
+
+        // Aplicar filtros
+        if (isset($filters['fecha_inicio'])) {
+            $query->where('fecha_inicio', '>=', $filters['fecha_inicio']);
+        }
+
+        if (isset($filters['fecha_fin'])) {
+            $query->where('fecha_fin', '<=', $filters['fecha_fin']);
+        }
+
+        if (isset($filters['coordinador_id'])) {
+            $query->where('coordinador_id', $filters['coordinador_id']);
+        }
+
+        // Ordenar por fecha de inicio por defecto
+        $query->orderBy('fecha_inicio', 'desc');
+
+        return $query->paginate($perPage, ['*'], 'page', $page);
     }
 
     public function findOrFail(int $id): EventModel

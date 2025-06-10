@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Events\Controllers\ActivityController;
 use Illuminate\Support\Facades\Route;
 use App\Modules\Authentication\Controllers\AuthController;
 use App\Modules\Users\Controllers\UserController;
@@ -77,6 +78,14 @@ Route::prefix('events')->middleware(['auth:api', 'roles:Coordinador de Eventos,A
         Route::post('/', [ProjectEventController::class, 'store']);
         Route::get('/{project}', [ProjectEventController::class, 'show']);
         Route::delete('/{project}', [ProjectEventController::class, 'destroy']);
+    });
+
+    Route::prefix('{event}/activities')->group(function () {
+        Route::get('/', [ActivityController::class, 'index']);
+        Route::post('/', [ActivityController::class, 'store']);
+        Route::get('/{activity}', [ActivityController::class, 'show']);
+        Route::put('/{activity}', [ActivityController::class, 'update']);
+        Route::delete('/{activity}', [ActivityController::class, 'destroy']);
     });
 });
 
