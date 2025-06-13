@@ -8,10 +8,15 @@ use App\Modules\Evaluations\Requests\ReassignEvaluatorRequest;
 use App\Modules\Evaluations\Requests\StoreEvaluationRequest;
 use App\Modules\Evaluations\Requests\UpdateEvaluationRequest;
 use App\Modules\Evaluations\Services\EvaluationService;
+use App\Modules\Projects\Models\Project;
+use App\Modules\Users\Models\UserModel;
 use App\Traits\ApiResponse;
+use App\Enums\ResponseCode;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Http\Controllers\Controller;
+use App\Modules\Projects\Models\ProjectModel;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 /**
  * @OA\Tag(
@@ -32,11 +37,55 @@ class EvaluationController extends Controller
      *     path="/api/evaluations",
      *     tags={"Evaluaciones"},
      *     summary="Obtener todas las evaluaciones",
-     *     description="Devuelve una lista de todas las evaluaciones",
+     *     description="Devuelve una lista paginada de evaluaciones con filtros opcionales",
      *     operationId="getAllEvaluations",
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Número de página",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Número de elementos por página",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=10)
+     *     ),
+     *     @OA\Parameter(
+     *         name="project",
+     *         in="query",
+     *         description="Filtrar por título del proyecto",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="evaluator",
+     *         in="query",
+     *         description="Filtrar por nombre del evaluador",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         description="Filtrar por estado",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"pendiente", "completada", "cancelada"})
+     *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Evaluaciones obtenidas correctamente"
+     *         description="Evaluaciones obtenidas correctamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Evaluation")),
+     *             @OA\Property(property="meta", type="object",
+     *                 @OA\Property(property="current_page", type="integer"),
+     *                 @OA\Property(property="last_page", type="integer"),
+     *                 @OA\Property(property="per_page", type="integer"),
+     *                 @OA\Property(property="total", type="integer")
+     *             )
+     *         )
      *     ),
      *     @OA\Response(
      *         response=404,
@@ -44,24 +93,31 @@ class EvaluationController extends Controller
      *     )
      * )
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $evaluations = $this->evaluationService->getAllEvaluations();
+            $page = $request->get('page', 1);
+            $perPage = $request->get('per_page', 10);
+            $filters = [
+                'project' => $request->get('project'),
+                'evaluator' => $request->get('evaluator'),
+                'status' => $request->get('status')
+            ];
 
-            if ($evaluations->isEmpty()) {
-                return $this->errorResponse(
-                    'No hay evaluaciones disponibles',
-                    404,
-                    null
-                );
-            }
+            $evaluations = $this->evaluationService->getAllEvaluations($page, $perPage, $filters);
 
-            return $this->successResponse(
-                $evaluations,
-                'Evaluaciones obtenidas correctamente',
-                200
-            );
+            // Siempre devolver 200 y la estructura de paginación, aunque esté vacío
+            return response()->json([
+                'status' => true,
+                'message' => $evaluations->isEmpty() ? 'No hay evaluaciones disponibles' : 'Evaluaciones obtenidas correctamente',
+                'data' => $evaluations->items(),
+                'meta' => [
+                    'current_page' => $evaluations->currentPage(),
+                    'last_page' => $evaluations->lastPage(),
+                    'per_page' => $evaluations->perPage(),
+                    'total' => $evaluations->total()
+                ]
+            ], 200);
         } catch (\Exception $e) {
             return $this->handleException($e);
         }
@@ -143,8 +199,7 @@ class EvaluationController extends Controller
         } catch (ModelNotFoundException $e) {
             return $this->errorResponse(
                 'Evaluación no encontrada',
-                404,
-                null
+                404
             );
         } catch (\Exception $e) {
             return $this->handleException($e, 404);
@@ -236,8 +291,7 @@ class EvaluationController extends Controller
         } catch (ModelNotFoundException $e) {
             return $this->errorResponse(
                 'Evaluación no encontrada',
-                404,
-                null
+                404
             );
         } catch (\Exception $e) {
             return $this->handleException($e, 400);
@@ -565,8 +619,7 @@ class EvaluationController extends Controller
             if ($evaluations->isEmpty()) {
                 return $this->errorResponse(
                     'No hay evaluaciones disponibles para este estado',
-                    404,
-                    null
+                    404
                 );
             }
 
@@ -775,7 +828,85 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $projects,
-                'Proyectos que necesitan evaluación obtenidos correctamente',
+                'Proyectos no evaluados obtenidos correctamente',
+                200
+            );
+        } catch (\Exception $e) {
+            return $this->handleException($e, 400);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/evaluations/evaluators",
+     *     tags={"Evaluaciones"},
+     *     summary="Obtener evaluadores por nombre",
+     *     description="Devuelve una lista de evaluadores filtrados por nombre",
+     *     operationId="getEvaluatorsByName",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="query",
+     *         description="ID del evaluador",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Evaluadores obtenidos correctamente"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Error en la solicitud"
+     *     )
+     * )
+     */
+    public function getEvaluatorsByName(Request $request): JsonResponse
+    {
+        try {
+            $evaluators = $this->evaluationService->getEvaluatorsByName($request->get('id') ?? null);
+
+            return $this->successResponse(
+                $evaluators,
+                'Evaluadores obtenidos correctamente',
+                200
+            );
+        } catch (\Exception $e) {
+            return $this->handleException($e, 400);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/evaluations/projects",
+     *     tags={"Evaluaciones"},
+     *     summary="Obtener todos los proyectos",
+     *     description="Devuelve una lista de proyectos filtrados por título",
+     *     operationId="getAllProjects",
+     *     @OA\Parameter(
+     *         name="titulo",
+     *         in="query",
+     *         description="Título del proyecto",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Proyectos obtenidos correctamente"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Error en la solicitud"
+     *     )
+     * )
+     */
+    public function getAllProjects(Request $request): JsonResponse
+    {
+        try {
+            $projects = $this->evaluationService->getAllProjects($request->get('titulo') ?? null);
+
+            return $this->successResponse(
+                $projects,
+                'Proyectos obtenidos correctamente',
                 200
             );
         } catch (\Exception $e) {
@@ -785,10 +916,9 @@ class EvaluationController extends Controller
 
     protected function handleException(\Exception $e, int $statusCode = 500): JsonResponse
     {
-        return response()->json([
-            'status' => false,
-            'error' => $e->getMessage(),
-            'code' => $statusCode
-        ], $statusCode);
+        return $this->errorResponse(
+            $e->getMessage(),
+            $statusCode
+        );
     }
 }

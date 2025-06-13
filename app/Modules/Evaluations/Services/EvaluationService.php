@@ -41,9 +41,9 @@ class EvaluationService
             ->whereNotIn('id', $currentEvaluators);
     }
 
-    public function getAllEvaluations()
+    public function getAllEvaluations($page = 1, $perPage = 10, $filters = [])
     {
-        return $this->evaluationRepository->getAllEvaluations();
+        return $this->evaluationRepository->getAllEvaluations($page, $perPage, $filters);
     }
 
     public function createEvaluation(array $data)
@@ -76,7 +76,7 @@ class EvaluationService
 
             $this->validateEvaluationData($validationData, $id);
         }
-
+        
         return $this->evaluationRepository->updateEvaluation($id, $data);
     }
 
@@ -291,5 +291,15 @@ class EvaluationService
             'En Proceso' => $inProcess,
             'Total' => $pending + $completed + $cancelled + $inProcess,
         ];
+    }
+
+    public function getEvaluatorsByName($id = null)
+    {
+        return $this->evaluationRepository->getEvaluatorsByName($id);
+    }
+
+    public function getAllProjects($name = null)
+    {
+        return $this->evaluationRepository->getAllProjects($name);
     }
 }
