@@ -50,11 +50,22 @@ class AuthService
                 'password' => ['La contraseña es incorrecta.'],
             ]);
         }
-
+        // Load the roles relationship (assuming UserModel has a "roles" relationship)
+        $user->load('roles');
         $token = JWTAuth::fromUser($user);
-
+        $userData = [
+            'id' => $user->id,
+            'nombre' => $user->nombre,
+            'email' => $user->email,
+            // Include roles. Assuming Rol model has id and nombre attributes.
+            'roles' => $user->roles->map(function($role) {
+                return ['id' => $role->id, 'nombre' => $role->nombre];
+            })->toArray(),
+            'programa_id' => $user->programa_id, // Keep other relevant fields
+            // 'tipo' is removed from the response
+        ];
         return [
-            'user' => $user,
+            'user' => $userData,
             'token' => $token,
         ];
     }
@@ -63,7 +74,7 @@ class AuthService
     {
         try {
             $token = JWTAuth::getToken();
-            
+
             if (!$token) {
                 throw new TokenInvalidException('No se proporcionó un token');
             }
@@ -73,7 +84,7 @@ class AuthService
             }
 
             $newToken = JWTAuth::refresh($token);
-            
+
             $user = Auth::user();
 
             if (!$user) {

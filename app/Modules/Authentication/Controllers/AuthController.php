@@ -15,7 +15,8 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
 use App\Modules\Authentication\Requests\RegisterRequest;
 use App\Modules\Authentication\Requests\LoginRequest;
-
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ResetPasswordTokenMail;
 /**
  * @OA\Tag(
  *     name="Autenticación",
@@ -298,6 +299,7 @@ class AuthController
         $user->save();
 
         // En producción aquí iría el envío de correo
+        Mail::to($user->email)->send(new ResetPasswordTokenMail($user->reset_token, $user->email));
 
         return $this->successResponse([
             'reset_token' => $user->reset_token
@@ -353,11 +355,6 @@ class AuthController
 
         if (!$user) {
             return $this->errorResponse(ResponseCode::EXPIRED_TOKEN, 400);
-        }
-
-        // Verificar que el token sea del usuario autenticado
-        if ($user->id !== Auth::id()) {
-            return $this->errorResponse(ResponseCode::FORBIDDEN, 403);
         }
 
         $user->contraseña = Hash::make($request->password);

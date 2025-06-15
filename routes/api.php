@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\UsuarioController;
 use App\Modules\Events\Controllers\ActivityController;
 use Illuminate\Support\Facades\Route;
 use App\Modules\Authentication\Controllers\AuthController;
@@ -37,6 +38,7 @@ Route::prefix('users')->middleware(['auth:api', 'roles:Administrador'])->group(f
     Route::get('/{id}', [UserController::class, 'show']);
     Route::put('/{id}', [UserController::class, 'update']);
     Route::delete('/{id}', [UserController::class, 'destroy']);
+    Route::get('usuarios/estudiantes-profesores', [UsuarioController::class, 'obtenerEstudiantesYProfesores']);
 });
 
 Route::prefix('universities')->middleware(['auth:api', 'roles:Administrador'])->group(function () {
