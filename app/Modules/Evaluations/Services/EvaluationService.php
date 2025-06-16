@@ -293,9 +293,9 @@ class EvaluationService
         ];
     }
 
-    public function getEvaluatorsByName($id = null)
+    public function getRoleById($id = null)
     {
-        return $this->evaluationRepository->getEvaluatorsByName($id);
+        return $this->evaluationRepository->getRoleById($id);
     }
 
     public function getAllProjects($name = null)

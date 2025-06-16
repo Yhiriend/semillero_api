@@ -237,18 +237,39 @@ class EvaluationRepository
             ->pluck('pe.proyecto_id');
     }
 
-    public function getEvaluatorsByName($id = null)
+    public function getRoleById($id = null)
     {
-        return DB::table('Usuario')
+        $data = DB::table('Usuario')
             ->join('Usuario_Rol', 'Usuario.id', '=', 'Usuario_Rol.usuario_id')
             ->join('Rol', 'Usuario_Rol.rol_id', '=', 'Rol.id')
             ->when($id, function ($query) use ($id) {
                 $query->where('Usuario.id', $id);
             })
-            ->where('Usuario.tipo', 'profesor')
-            ->where('Usuario_Rol.rol_id', 7)
             ->select('Usuario.id', 'Usuario.nombre', 'Usuario.email', 'Usuario.tipo', 'Usuario_Rol.rol_id', 'Rol.nombre as rol')
             ->get();
+    
+        if ($data->isEmpty()) {
+            return null;
+        }
+    
+        // Tomar los datos generales del primer registro
+        $user = [
+            'id' => $data[0]->id,
+            'nombre' => $data[0]->nombre,
+            'email' => $data[0]->email,
+            'tipo' => $data[0]->tipo,
+            'roles' => []
+        ];
+    
+        // Agregar todos los roles
+        foreach ($data as $item) {
+            $user['roles'][] = [
+                'rol_id' => $item->rol_id,
+                'rol' => $item->rol
+            ];
+        }
+    
+        return $user;
     }
 
     public function getAllProjects($name = null)

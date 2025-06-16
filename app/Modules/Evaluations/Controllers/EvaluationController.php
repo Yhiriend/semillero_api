@@ -106,10 +106,7 @@ class EvaluationController extends Controller
 
             $evaluations = $this->evaluationService->getAllEvaluations($page, $perPage, $filters);
 
-            // Siempre devolver 200 y la estructura de paginación, aunque esté vacío
-            return response()->json([
-                'status' => true,
-                'message' => $evaluations->isEmpty() ? 'No hay evaluaciones disponibles' : 'Evaluaciones obtenidas correctamente',
+            $responseData = [
                 'data' => $evaluations->items(),
                 'meta' => [
                     'current_page' => $evaluations->currentPage(),
@@ -117,9 +114,18 @@ class EvaluationController extends Controller
                     'per_page' => $evaluations->perPage(),
                     'total' => $evaluations->total()
                 ]
-            ], 200);
+            ];
+
+            return $this->successResponse(
+                $responseData,
+                ResponseCode::SUCCESS
+            );
         } catch (\Exception $e) {
-            return $this->handleException($e);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                500,
+                'Error al obtener las evaluaciones: ' . $e->getMessage()
+            );
         }
     }
 
@@ -155,11 +161,15 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $evaluation,
-                'Evaluación creada correctamente',
+                ResponseCode::SUCCESS,
                 201
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al crear la evaluación: ' . $e->getMessage()
+            );
         }
     }
 
@@ -193,16 +203,20 @@ class EvaluationController extends Controller
             $evaluation = $this->evaluationService->findOrFail($id);
             return $this->successResponse(
                 $evaluation,
-                'Evaluación obtenida correctamente',
-                200
+                ResponseCode::SUCCESS
             );
         } catch (ModelNotFoundException $e) {
             return $this->errorResponse(
-                'Evaluación no encontrada',
-                404
+                ResponseCode::NOT_FOUND,
+                404,
+                'Evaluación no encontrada'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 404);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                500,
+                'Error al obtener la evaluación: ' . $e->getMessage()
+            );
         }
     }
 
@@ -246,11 +260,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $updatedEvaluation,
-                'Evaluación actualizada correctamente',
-                200
+                ResponseCode::SUCCESS
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                ResponseCode::NOT_FOUND,
+                404,
+                'Evaluación no encontrada'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al actualizar la evaluación: ' . $e->getMessage()
+            );
         }
     }
 
@@ -285,16 +308,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 null,
-                'Evaluación eliminada correctamente',
-                200
+                ResponseCode::SUCCESS
             );
         } catch (ModelNotFoundException $e) {
             return $this->errorResponse(
-                'Evaluación no encontrada',
-                404
+                ResponseCode::NOT_FOUND,
+                404,
+                'Evaluación no encontrada'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                500,
+                'Error al eliminar la evaluación: ' . $e->getMessage()
+            );
         }
     }
 
@@ -329,11 +356,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 null,
-                'Evaluación cancelada correctamente',
-                200
+                ResponseCode::SUCCESS
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                ResponseCode::NOT_FOUND,
+                404,
+                'Evaluación no encontrada'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al cancelar la evaluación: ' . $e->getMessage()
+            );
         }
     }
 
@@ -377,11 +413,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $evaluation,
-                'Evaluación completada correctamente',
-                200
+                ResponseCode::SUCCESS
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                ResponseCode::NOT_FOUND,
+                404,
+                'Evaluación no encontrada'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al completar la evaluación: ' . $e->getMessage()
+            );
         }
     }
 
@@ -423,11 +468,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $evaluation,
-                'Evaluador reasignado correctamente',
-                200
+                ResponseCode::SUCCESS
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                ResponseCode::NOT_FOUND,
+                404,
+                'Evaluación no encontrada'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al reasignar evaluador: ' . $e->getMessage()
+            );
         }
     }
 
@@ -462,11 +516,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $evaluations,
-                'Evaluaciones por proyecto obtenidas correctamente',
-                200
+                ResponseCode::SUCCESS
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                ResponseCode::NOT_FOUND,
+                404,
+                'Proyecto no encontrado'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al obtener evaluaciones por proyecto: ' . $e->getMessage()
+            );
         }
     }
 
@@ -501,11 +564,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $evaluations,
-                'Evaluaciones por evaluador obtenidas correctamente',
-                200
+                ResponseCode::SUCCESS
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                ResponseCode::NOT_FOUND,
+                404,
+                'Evaluador no encontrado'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al obtener evaluaciones por evaluador: ' . $e->getMessage()
+            );
         }
     }
 
@@ -540,11 +612,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $performance,
-                'Rendimiento del evaluador obtenido correctamente',
-                200
+                ResponseCode::SUCCESS
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                ResponseCode::NOT_FOUND,
+                404,
+                'Evaluador no encontrado'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al obtener rendimiento del evaluador: ' . $e->getMessage()
+            );
         }
     }
 
@@ -579,11 +660,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $metrics,
-                'Métricas por estado obtenidas correctamente',
-                200
+                ResponseCode::SUCCESS
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                ResponseCode::NOT_FOUND,
+                404,
+                'Proyecto no encontrado'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al obtener métricas por estado: ' . $e->getMessage()
+            );
         }
     }
 
@@ -618,18 +708,22 @@ class EvaluationController extends Controller
 
             if ($evaluations->isEmpty()) {
                 return $this->errorResponse(
-                    'No hay evaluaciones disponibles para este estado',
-                    404
+                    ResponseCode::NOT_FOUND,
+                    404,
+                    'No hay evaluaciones disponibles para este estado'
                 );
             }
 
             return $this->successResponse(
                 $evaluations,
-                'Evaluaciones por estado obtenidas correctamente',
-                200
+                ResponseCode::SUCCESS
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al obtener evaluaciones por estado: ' . $e->getMessage()
+            );
         }
     }
 
@@ -664,11 +758,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $evaluators,
-                'Evaluadores disponibles obtenidos correctamente',
-                200
+                ResponseCode::SUCCESS
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                ResponseCode::NOT_FOUND,
+                404,
+                'Proyecto no encontrado'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al obtener evaluadores disponibles: ' . $e->getMessage()
+            );
         }
     }
 
@@ -718,11 +821,14 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $assignments,
-                'Evaluadores asignados correctamente',
-                200
+                ResponseCode::SUCCESS
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al asignar evaluadores masivamente: ' . $e->getMessage()
+            );
         }
     }
 
@@ -750,11 +856,14 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $stats,
-                'Estadísticas del dashboard obtenidas correctamente',
-                200
+                ResponseCode::SUCCESS
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al obtener estadísticas del dashboard: ' . $e->getMessage()
+            );
         }
     }
 
@@ -789,11 +898,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $report,
-                'Reporte generado correctamente',
-                200
+                ResponseCode::SUCCESS
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                ResponseCode::NOT_FOUND,
+                404,
+                'Evento no encontrado'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al generar reporte: ' . $e->getMessage()
+            );
         }
     }
 
@@ -828,11 +946,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $projects,
-                'Proyectos no evaluados obtenidos correctamente',
-                200
+                ResponseCode::SUCCESS
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                ResponseCode::NOT_FOUND,
+                404,
+                'Evento no encontrado'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al obtener proyectos no evaluados: ' . $e->getMessage()
+            );
         }
     }
 
@@ -860,18 +987,21 @@ class EvaluationController extends Controller
      *     )
      * )
      */
-    public function getEvaluatorsByName(Request $request): JsonResponse
+    public function getRoleById(Request $request): JsonResponse
     {
         try {
-            $evaluators = $this->evaluationService->getEvaluatorsByName($request->get('id') ?? null);
+            $evaluators = $this->evaluationService->getRoleById($request->get('id') ?? null);
 
             return $this->successResponse(
                 $evaluators,
-                'Evaluadores obtenidos correctamente',
-                200
+                ResponseCode::SUCCESS
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al obtener evaluadores: ' . $e->getMessage()
+            );
         }
     }
 
@@ -906,19 +1036,14 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $projects,
-                'Proyectos obtenidos correctamente',
-                200
+                ResponseCode::SUCCESS
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al obtener proyectos: ' . $e->getMessage()
+            );
         }
-    }
-
-    protected function handleException(\Exception $e, int $statusCode = 500): JsonResponse
-    {
-        return $this->errorResponse(
-            $e->getMessage(),
-            $statusCode
-        );
     }
 }
