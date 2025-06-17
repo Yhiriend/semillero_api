@@ -15,7 +15,7 @@ use App\Modules\Reports\Controllers\ReportController;
 use App\Modules\Seedbeds\Controllers\SeedbedsController;
 use App\Modules\Seedbeds\Controllers\InscriptionController;
 use App\Modules\Reports\Controllers\EvaluatorController;
-use App\Modules\Reports\Controllers\EventInscriptionController;
+use App\Modules\Seedbeds\Controllers\EventInscriptionController;
 
 
 Route::prefix('auth')->group(function () {
@@ -90,8 +90,14 @@ Route::prefix('events')->middleware(['auth:api', 'roles:Coordinador de Eventos,A
 });
 
 Route::prefix('projects')->group(function () {
-    Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->get('/', [ProjectController::class, 'getAllProjects'])->name('projects.getAllProjects');
-    Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->get('/{id}', [ProjectController::class, 'getProjectById'])->name('projects.getProjectById');
+    Route::middleware(['auth:api', 'roles:Lider de Proyecto,Coordinador de Semillero,Coordinador de Proyecto,Administrador'])->get('/', [ProjectController::class, 'getAllProjects'])->name('projects.getAllProjects');
+    Route::middleware(['auth:api', 'roles:Lider de Proyecto,Coordinador de Semillero,Coordinador de Proyecto,Administrador'])->get('/{id}', [ProjectController::class, 'getProjectById'])->name('projects.getProjectById');
+    Route::middleware(['auth:api', 'roles:Lider de Proyecto,Coordinador de Semillero,Coordinador de Proyecto,Administrador'])->get('/{id}/users', [ProjectController::class, 'getProjectUsers']);
+    Route::middleware(['auth:api', 'roles:Lider de Proyecto,Coordinador de Semillero,Administrador'])->get('/seedbed/{seedbedId}/integrantes', [ProjectController::class, 'getSeedbedIntegrantes']);
+    Route::middleware(['auth:api', 'roles:Lider de Proyecto,Coordinador de Semillero,Administrador'])->get('/{LeaderId}/seedbeds', [ProjectController::class, 'getSeedbedProjects']);
+    Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Coordinador de Semillero,Administrador'])->get('/seedbed/{seedbedId}/lideres', [ProjectController::class, 'getSeedbedLideres']);
+    Route::middleware(['auth:api', 'roles:Lider de Proyecto,Coordinador de Semillero,Coordinador de Proyecto,Administrador'])->get('/{id}/evaluation', [ProjectController::class, 'getProjectEvaluation']);
+    Route::middleware(['auth:api', 'roles:Lider de Proyecto,Coordinador de Semillero,Administrador'])->get('/seedbed/{seedbedId}/coordinadores', [ProjectController::class, 'getSeedbedCoordinadores']);
 
     Route::middleware(['auth:api', 'roles:Lider de Proyecto,Administrador'])->post('/{id}', [ProjectController::class, 'storeProject'])->name('projects.storeProject');
     Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->post('/{id}/asignar-estudiantes', [ProjectController::class, 'assignStudentToProject']);
@@ -151,11 +157,14 @@ Route::prefix('reports')->middleware(['auth:api', 'roles:Administrador'])->group
 });
 
 Route::middleware(['auth:api'])->group(function () {
+
     Route::middleware(['roles:Integrante Semillero'])->group(function () {
         Route::get('/seedbeds', [SeedbedsController::class, 'index'])->name('semilleros.index');
         Route::get('/seedbeds/{id}', [SeedbedsController::class, 'show'])->name('semilleros.show');
         Route::get('/seedbeds/{id}/students', [InscriptionController::class, 'studentsBySeedbed']);
     });
+
+
     Route::middleware(['roles:Coordinador de Semillero'])->group(function () {
         Route::post('/seedbeds', [SeedbedsController::class, 'store']);
         Route::put('/seedbeds/{id}', [SeedbedsController::class, 'update']);

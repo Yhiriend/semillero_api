@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Modules\Projects\Services;
+
 use App\Modules\Projects\Models\ProjectUsersModel;
 
 use App\Modules\Projects\Repositories\ProjectRepository;
@@ -8,7 +9,7 @@ use App\Modules\Projects\Repositories\ProjectRepository;
 class ProjectService
 {
     protected $projectRepository;
-    
+
     public function __construct()
     {
         $this->projectRepository = new ProjectRepository();
@@ -17,9 +18,9 @@ class ProjectService
     /**
      * Get all projects
      */
-    public function getAllProjects()
+    public function getAllProjects($perPage = 5)
     {
-        return $this->projectRepository->getAllProjects();
+        return $this->projectRepository->getAllProjects($perPage);
     }
 
     /**
@@ -45,7 +46,7 @@ class ProjectService
     {
         return $this->projectRepository->updateProject($projectId, $data);
     }
-    
+
     /**
      * Change project status
      */
@@ -59,5 +60,31 @@ class ProjectService
         // Aquí puedes agregar lógica para evitar duplicados si deseas
         return $this->projectRepository->assignStudentToProject($projectId, $userId);
     }
+
+    public function getProjectUsers($projectId)
+    {
+        return $this->projectRepository->getProjectUsers($projectId);
+    }
+
+    public function getProjectEvaluation($projectId)
+    {
+        return $this->projectRepository->getProjectEvaluation($projectId);
+    }
+    public function getSeedbedIntegrantes($seedbedId)
+    {
+        return $this->projectRepository->getSeedbedIntegrantes($seedbedId);
+    }
+
+    public function getSeedbedLideres($seedbedId)
+    {
+        return $this->projectRepository->getSeedbedLideres($seedbedId);
+    }
+
+    /**
+     * Get coordinators of a seedbed
+     */
+    public function getSeedbedCoordinadores($seedbedId)
+    {
+        return $this->projectRepository->getSeedbedCoordinadores($seedbedId);
+    }
 }
-?>

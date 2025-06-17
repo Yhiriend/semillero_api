@@ -35,7 +35,7 @@ class AuthService
         return compact('user', 'token');
     }
 
-    public function login(string $email, string $password): array
+      public function login(string $email, string $password): array
     {
         $user = $this->authRepository->findByEmail($email);
 
@@ -53,17 +53,34 @@ class AuthService
 
         $token = JWTAuth::fromUser($user);
 
+        // Load the roles relationship (assuming UserModel has a "roles" relationship)
+        $user->load('roles');
+
+        // Format the user data to include roles instead of tipo
+        $userData = [
+            'id' => $user->id,
+            'nombre' => $user->nombre,
+            'email' => $user->email,
+            // Include roles. Assuming Rol model has id and nombre attributes.
+            'roles' => $user->roles->map(function($role) {
+                return ['id' => $role->id, 'nombre' => $role->nombre];
+            })->toArray(),
+            'programa_id' => $user->programa_id, // Keep other relevant fields
+            // 'tipo' is removed from the response
+        ];
+
         return [
-            'user' => $user,
+            'user' => $userData, // Return the formatted user data
             'token' => $token,
         ];
     }
+
 
     public function refreshToken(): array
     {
         try {
             $token = JWTAuth::getToken();
-            
+
             if (!$token) {
                 throw new TokenInvalidException('No se proporcionó un token');
             }
@@ -73,7 +90,7 @@ class AuthService
             }
 
             $newToken = JWTAuth::refresh($token);
-            
+
             $user = Auth::user();
 
             if (!$user) {

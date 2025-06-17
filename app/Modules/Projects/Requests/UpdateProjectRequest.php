@@ -14,13 +14,13 @@ class UpdateProjectRequest extends FormRequest
     public function rules()
     {
         return [
-            'titulo' => 'required|string|max:255',
-            'descripcion' => 'required|string',
-            'semillero_id' => 'required|exists:semillero,id',
-            'lider_id' => 'required|exists:usuario,id',
-            'coordinador_id' => 'required|exists:usuario,id',
-            'fecha_inicio' => 'required|date',
-            'fecha_fin' => 'required|date|after:fecha_inicio',
+            'titulo' => 'string|max:255',
+            'descripcion' => 'string',
+            'semillero_id' => 'exists:semillero,id',
+            'lider_id' => 'exists:usuario,id',
+            'coordinador_id' => 'exists:usuario,id',
+            'fecha_inicio' => 'date',
+            'fecha_fin' => 'date',
         ];
     }
 

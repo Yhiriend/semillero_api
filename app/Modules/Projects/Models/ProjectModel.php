@@ -57,10 +57,10 @@ class ProjectModel extends Model
     /**
      * Get the users (authors) associated with the project.
      */
-    public function autores()
+    public function students()
     {
         return $this->belongsToMany(
-            \App\Modules\Users\Models\UserModel::class,
+            UserModel::class,
             'proyecto_usuario',
             'proyecto_id',
             'usuario_id'
@@ -72,7 +72,7 @@ class ProjectModel extends Model
      */
     public function lider()
     {
-        return $this->belongsTo(\App\Modules\Users\Models\UserModel::class, 'lider_id');
+        return $this->belongsTo(UserModel::class, 'lider_id');
     }
 
     /**
@@ -80,22 +80,26 @@ class ProjectModel extends Model
      */
     public function coordinador()
     {
-        return $this->belongsTo(\App\Modules\Users\Models\UserModel::class, 'coordinador_id');
-
+        return $this->belongsTo(UserModel::class, 'coordinador_id');
     }
     public function seedbed(): BelongsTo
     {
-        return $this->belongsTo(\App\Modules\Seedbeds\Models\SeedbedModel::class, 'semillero_id');
+        return $this->belongsTo(HotbedModel::class, 'semillero_id');
     }
 
     public function coordinator(): BelongsTo
     {
-        return $this->belongsTo(\App\Modules\Users\Models\UserModel::class, 'coordinador_id');
+        return $this->belongsTo(UserModel::class, 'coordinador_id');
     }
 
     public function leader(): BelongsTo
     {
-        return $this->belongsTo(\App\Modules\Users\Models\UserModel::class, 'lider_id');
+        return $this->belongsTo(UserModel::class, 'lider_id');
+    }
+
+    public function university()
+    {
+        return $this->belongsTo(UniversityModel::class, 'universidad_id');
     }
 
     public function events(): BelongsToMany
