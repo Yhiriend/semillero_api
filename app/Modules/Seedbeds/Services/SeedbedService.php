@@ -9,23 +9,58 @@ use App\Modules\Seedbeds\Resources\SeedbedResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
+
+use App\Modules\Programs\Services\ProgramService;
+use App\Modules\Users\Services\UserService;
+use App\Modules\Seedbeds\Models\Seedbed;
+
 class SeedbedService
 {
     protected SeedbedRepository $repository;
-
-    public function __construct(SeedbedRepository $repository)
+    protected ProgramService $programService;
+    protected UserService $userService;
+    public function __construct(SeedbedRepository $repository, ProgramService $programService, UserService $userService)
     {
         $this->repository = $repository;
+        $this->programService = $programService;
+        $this->userService = $userService;
     }
 
-    public function index(Request $request): JsonResponse
+    //!Cambio
+    public function index(Request $request)
     {
-        $data = $this->repository->getAll($request->query('query'));
+        try {
+            $query = Seedbed::query();
 
-        return response()->json([
-            'status' => 'success',
-            'data' => SeedbedResource::collection($data)
-        ]);
+            if ($search = $request->get('q')) {
+                $query->where('nombre', 'like', "%$search%")
+                    ->orWhere('id', 'like', "%$search%")
+                    ->orWhere('descripcion', 'like', "%$search%")
+                    ->orWhereHas('programa', function ($programQuery) use ($search) {
+                        $programQuery->where('nombre', 'like', "%{$search}%");
+                    });
+            }
+            $seedbeds = $query->orderBy('fecha_creacion', 'desc')->paginate(7);
+
+            $seedbeds->getCollection()->transform(function ($seedbed) {
+                // Coordinador nombre
+                $coordinador = $this->userService->getUserById($seedbed->coordinador_id);
+                $seedbed->coordinador = $coordinador->nombre;
+
+                //Programa nombre
+                $programa = $this->programService->getById($seedbed->programa_id);
+                $seedbed->programa = $programa->nombre;
+
+                return $seedbed;
+            });
+            return response()->json([
+                'data' => $seedbeds
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al obtener los semilleros: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function show(int $id): JsonResponse

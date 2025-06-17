@@ -38,19 +38,4 @@ class InscriptionRepository
             'fecha_inscripcion' => now(),
         ]);
     }
-
-    public function findByFilters(?int $seedbedId = null, ?int $userId = null)
-    {
-        $query = DB::table($this->table);
-
-        if (!is_null($seedbedId)) {
-            $query->where('semillero_id', $seedbedId);
-        }
-
-        if (!is_null($userId)) {
-            $query->where('usuario_id', $userId);
-        }
-
-        return $query->get();
-    }
 }

@@ -18,7 +18,7 @@ class SeedbedResource extends JsonResource
 
             'coordinator' => [
                 'id'   => $this->coordinador?->id,
-                'name' => $this->coordinador?->name,
+                'name' => $this->coordinador?->nombre,
                 'email'=> $this->coordinador?->email,
             ],
 

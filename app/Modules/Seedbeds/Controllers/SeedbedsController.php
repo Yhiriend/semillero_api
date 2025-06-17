@@ -8,6 +8,9 @@ use App\Modules\Seedbeds\Requests\UpdateSeedbedRequest;
 use App\Modules\Seedbeds\Services\SeedbedService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Modules\Programs\Models\ProgramModel;
+use App\Modules\Users\Models\UserModel;
+
 
 /**
  * @OA\Tag(
@@ -32,6 +35,7 @@ class SeedbedsController extends Controller
      *     @OA\Response(response=200, description="Lista de semilleros")
      * )
      */
+
     public function index(Request $request): JsonResponse
     {
         return $this->seedbedService->index($request);
@@ -113,5 +117,17 @@ class SeedbedsController extends Controller
     public function delete($id): JsonResponse
     {
         return $this->seedbedService->delete($id);
+    }
+
+    public function coordinators()
+    {
+        $coordinators = UserModel::where('tipo', 'profesor')->get();
+        return response()->json(['data' => $coordinators]);
+    }
+
+    public function programs()
+    {
+        $programs = ProgramModel::all();
+        return response()->json(['data' => $programs]);
     }
 }

@@ -149,20 +149,22 @@ Route::prefix('reports')->middleware(['auth:api', 'roles:Administrador'])->group
 });
 
 Route::middleware(['auth:api'])->group(function () {
-
     Route::middleware(['roles:Integrante Semillero'])->group(function () {
         Route::get('/seedbeds', [SeedbedsController::class, 'index'])->name('semilleros.index');
         Route::get('/seedbeds/{id}', [SeedbedsController::class, 'show'])->name('semilleros.show');
+        Route::get('/seedbeds/{id}/students', [InscriptionController::class, 'studentsBySeedbed']);
     });
-
-
     Route::middleware(['roles:Coordinador de Semillero'])->group(function () {
         Route::post('/seedbeds', [SeedbedsController::class, 'store']);
         Route::put('/seedbeds/{id}', [SeedbedsController::class, 'update']);
-        Route::delete('/seedbeds/{id}', [SeedbedsController::class, 'destroy']);
+        Route::delete('/seedbeds/{id}', [SeedbedsController::class, 'delete']);
         Route::get('/seedbeds/{id}/inscriptions', [InscriptionController::class, 'index']);
         Route::post('/seedbeds/{id}/inscriptions', [InscriptionController::class, 'store']);
+        Route::get('seedbeds/{id}/students', [InscriptionController::class, 'students']);
+        Route::delete('/inscriptions/{semillero_id}/{usuario_id}', [InscriptionController::class, 'destroy'])->name('inscripciones.destroy');
         Route::put('/inscriptions/{id}', [InscriptionController::class, 'update']);
         Route::delete('/inscriptions/{id}', [InscriptionController::class, 'destroy']);
+        Route::get('/inscriptions', [InscriptionController::class, 'index'])->name('inscripciones.index');
+        Route::post('/inscriptions', [InscriptionController::class, 'store'])->name('inscripciones.store');
     });
 });

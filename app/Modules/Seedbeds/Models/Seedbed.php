@@ -3,7 +3,8 @@
 namespace App\Modules\Seedbeds\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Modules\Seedbeds\Models\UserModel;
+use App\Modules\Users\Models\UserModel;
+use App\Modules\Programs\Models\ProgramModel;
 
 class Seedbed extends Model
 {
@@ -13,7 +14,7 @@ class Seedbed extends Model
     }
     public function programa()
     {
-        return $this->belongsTo(Program::class, 'programa_id');
+        return $this->belongsTo(ProgramModel::class, 'programa_id');
     }
         protected $table = 'semillero';
         protected $fillable = [
@@ -25,4 +26,15 @@ class Seedbed extends Model
         'fecha_actualizacion'
     ];
     public $timestamps = false;
+    public function student()
+    {
+        return $this->belongsTo(UserModel::class, 'usuario_id');
+    }
+
+    public function inscripciones()
+    {
+        return $this->hasMany(Inscription::class);
+    }
+    
+
 }

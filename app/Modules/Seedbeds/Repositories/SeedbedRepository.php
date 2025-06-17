@@ -13,7 +13,7 @@ class SeedbedRepository
         if (!is_null($search)) {
             $query->where(function ($q) use ($search) {
                 $q->where('nombre', 'like', "%$search%")
-                  ->orWhere('id', $search);
+                    ->orWhere('id', $search);
             });
         }
 
