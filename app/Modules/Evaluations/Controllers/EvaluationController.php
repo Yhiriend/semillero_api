@@ -8,10 +8,15 @@ use App\Modules\Evaluations\Requests\ReassignEvaluatorRequest;
 use App\Modules\Evaluations\Requests\StoreEvaluationRequest;
 use App\Modules\Evaluations\Requests\UpdateEvaluationRequest;
 use App\Modules\Evaluations\Services\EvaluationService;
+use App\Modules\Projects\Models\Project;
+use App\Modules\Users\Models\UserModel;
 use App\Traits\ApiResponse;
+use App\Enums\ResponseCode;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Http\Controllers\Controller;
+use App\Modules\Projects\Models\ProjectModel;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 /**
  * @OA\Tag(
@@ -32,11 +37,55 @@ class EvaluationController extends Controller
      *     path="/api/evaluations",
      *     tags={"Evaluaciones"},
      *     summary="Obtener todas las evaluaciones",
-     *     description="Devuelve una lista de todas las evaluaciones",
+     *     description="Devuelve una lista paginada de evaluaciones con filtros opcionales",
      *     operationId="getAllEvaluations",
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Número de página",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Número de elementos por página",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=10)
+     *     ),
+     *     @OA\Parameter(
+     *         name="project",
+     *         in="query",
+     *         description="Filtrar por título del proyecto",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="evaluator",
+     *         in="query",
+     *         description="Filtrar por nombre del evaluador",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         description="Filtrar por estado",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"pendiente", "completada", "cancelada"})
+     *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Evaluaciones obtenidas correctamente"
+     *         description="Evaluaciones obtenidas correctamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Evaluation")),
+     *             @OA\Property(property="meta", type="object",
+     *                 @OA\Property(property="current_page", type="integer"),
+     *                 @OA\Property(property="last_page", type="integer"),
+     *                 @OA\Property(property="per_page", type="integer"),
+     *                 @OA\Property(property="total", type="integer")
+     *             )
+     *         )
      *     ),
      *     @OA\Response(
      *         response=404,
@@ -44,26 +93,39 @@ class EvaluationController extends Controller
      *     )
      * )
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $evaluations = $this->evaluationService->getAllEvaluations();
+            $page = $request->get('page', 1);
+            $perPage = $request->get('per_page', 10);
+            $filters = [
+                'project' => $request->get('project'),
+                'evaluator' => $request->get('evaluator'),
+                'status' => $request->get('status')
+            ];
 
-            if ($evaluations->isEmpty()) {
-                return $this->errorResponse(
-                    'No hay evaluaciones disponibles',
-                    404,
-                    null
-                );
-            }
+            $evaluations = $this->evaluationService->getAllEvaluations($page, $perPage, $filters);
+
+            $responseData = [
+                'data' => $evaluations->items(),
+                'meta' => [
+                    'current_page' => $evaluations->currentPage(),
+                    'last_page' => $evaluations->lastPage(),
+                    'per_page' => $evaluations->perPage(),
+                    'total' => $evaluations->total()
+                ]
+            ];
 
             return $this->successResponse(
-                $evaluations,
-                'Evaluaciones obtenidas correctamente',
-                200
+                $responseData,
+                ResponseCode::SUCCESS
             );
         } catch (\Exception $e) {
-            return $this->handleException($e);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                500,
+                'Error al obtener las evaluaciones: ' . $e->getMessage()
+            );
         }
     }
 
@@ -99,11 +161,15 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $evaluation,
-                'Evaluación creada correctamente',
+                ResponseCode::SUCCESS,
                 201
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al crear la evaluación: ' . $e->getMessage()
+            );
         }
     }
 
@@ -137,17 +203,20 @@ class EvaluationController extends Controller
             $evaluation = $this->evaluationService->findOrFail($id);
             return $this->successResponse(
                 $evaluation,
-                'Evaluación obtenida correctamente',
-                200
+                ResponseCode::SUCCESS
             );
         } catch (ModelNotFoundException $e) {
             return $this->errorResponse(
-                'Evaluación no encontrada',
+                ResponseCode::NOT_FOUND,
                 404,
-                null
+                'Evaluación no encontrada'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 404);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                500,
+                'Error al obtener la evaluación: ' . $e->getMessage()
+            );
         }
     }
 
@@ -191,11 +260,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $updatedEvaluation,
-                'Evaluación actualizada correctamente',
-                200
+                ResponseCode::SUCCESS
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                ResponseCode::NOT_FOUND,
+                404,
+                'Evaluación no encontrada'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al actualizar la evaluación: ' . $e->getMessage()
+            );
         }
     }
 
@@ -230,17 +308,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 null,
-                'Evaluación eliminada correctamente',
-                200
+                ResponseCode::SUCCESS
             );
         } catch (ModelNotFoundException $e) {
             return $this->errorResponse(
-                'Evaluación no encontrada',
+                ResponseCode::NOT_FOUND,
                 404,
-                null
+                'Evaluación no encontrada'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                500,
+                'Error al eliminar la evaluación: ' . $e->getMessage()
+            );
         }
     }
 
@@ -275,11 +356,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 null,
-                'Evaluación cancelada correctamente',
-                200
+                ResponseCode::SUCCESS
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                ResponseCode::NOT_FOUND,
+                404,
+                'Evaluación no encontrada'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al cancelar la evaluación: ' . $e->getMessage()
+            );
         }
     }
 
@@ -323,11 +413,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $evaluation,
-                'Evaluación completada correctamente',
-                200
+                ResponseCode::SUCCESS
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                ResponseCode::NOT_FOUND,
+                404,
+                'Evaluación no encontrada'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al completar la evaluación: ' . $e->getMessage()
+            );
         }
     }
 
@@ -369,11 +468,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $evaluation,
-                'Evaluador reasignado correctamente',
-                200
+                ResponseCode::SUCCESS
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                ResponseCode::NOT_FOUND,
+                404,
+                'Evaluación no encontrada'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al reasignar evaluador: ' . $e->getMessage()
+            );
         }
     }
 
@@ -408,11 +516,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $evaluations,
-                'Evaluaciones por proyecto obtenidas correctamente',
-                200
+                ResponseCode::SUCCESS
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                ResponseCode::NOT_FOUND,
+                404,
+                'Proyecto no encontrado'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al obtener evaluaciones por proyecto: ' . $e->getMessage()
+            );
         }
     }
 
@@ -447,11 +564,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $evaluations,
-                'Evaluaciones por evaluador obtenidas correctamente',
-                200
+                ResponseCode::SUCCESS
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                ResponseCode::NOT_FOUND,
+                404,
+                'Evaluador no encontrado'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al obtener evaluaciones por evaluador: ' . $e->getMessage()
+            );
         }
     }
 
@@ -486,11 +612,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $performance,
-                'Rendimiento del evaluador obtenido correctamente',
-                200
+                ResponseCode::SUCCESS
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                ResponseCode::NOT_FOUND,
+                404,
+                'Evaluador no encontrado'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al obtener rendimiento del evaluador: ' . $e->getMessage()
+            );
         }
     }
 
@@ -525,11 +660,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $metrics,
-                'Métricas por estado obtenidas correctamente',
-                200
+                ResponseCode::SUCCESS
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                ResponseCode::NOT_FOUND,
+                404,
+                'Proyecto no encontrado'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al obtener métricas por estado: ' . $e->getMessage()
+            );
         }
     }
 
@@ -564,19 +708,22 @@ class EvaluationController extends Controller
 
             if ($evaluations->isEmpty()) {
                 return $this->errorResponse(
-                    'No hay evaluaciones disponibles para este estado',
+                    ResponseCode::NOT_FOUND,
                     404,
-                    null
+                    'No hay evaluaciones disponibles para este estado'
                 );
             }
 
             return $this->successResponse(
                 $evaluations,
-                'Evaluaciones por estado obtenidas correctamente',
-                200
+                ResponseCode::SUCCESS
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al obtener evaluaciones por estado: ' . $e->getMessage()
+            );
         }
     }
 
@@ -611,11 +758,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $evaluators,
-                'Evaluadores disponibles obtenidos correctamente',
-                200
+                ResponseCode::SUCCESS
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                ResponseCode::NOT_FOUND,
+                404,
+                'Proyecto no encontrado'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al obtener evaluadores disponibles: ' . $e->getMessage()
+            );
         }
     }
 
@@ -665,11 +821,14 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $assignments,
-                'Evaluadores asignados correctamente',
-                200
+                ResponseCode::SUCCESS
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al asignar evaluadores masivamente: ' . $e->getMessage()
+            );
         }
     }
 
@@ -697,11 +856,14 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $stats,
-                'Estadísticas del dashboard obtenidas correctamente',
-                200
+                ResponseCode::SUCCESS
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al obtener estadísticas del dashboard: ' . $e->getMessage()
+            );
         }
     }
 
@@ -736,11 +898,20 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $report,
-                'Reporte generado correctamente',
-                200
+                ResponseCode::SUCCESS
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                ResponseCode::NOT_FOUND,
+                404,
+                'Evento no encontrado'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al generar reporte: ' . $e->getMessage()
+            );
         }
     }
 
@@ -775,20 +946,104 @@ class EvaluationController extends Controller
 
             return $this->successResponse(
                 $projects,
-                'Proyectos que necesitan evaluación obtenidos correctamente',
-                200
+                ResponseCode::SUCCESS
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                ResponseCode::NOT_FOUND,
+                404,
+                'Evento no encontrado'
             );
         } catch (\Exception $e) {
-            return $this->handleException($e, 400);
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al obtener proyectos no evaluados: ' . $e->getMessage()
+            );
         }
     }
 
-    protected function handleException(\Exception $e, int $statusCode = 500): JsonResponse
+    /**
+     * @OA\Get(
+     *     path="/api/evaluations/evaluators",
+     *     tags={"Evaluaciones"},
+     *     summary="Obtener evaluadores por nombre",
+     *     description="Devuelve una lista de evaluadores filtrados por nombre",
+     *     operationId="getEvaluatorsByName",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="query",
+     *         description="ID del evaluador",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Evaluadores obtenidos correctamente"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Error en la solicitud"
+     *     )
+     * )
+     */
+    public function getRoleById(Request $request): JsonResponse
     {
-        return response()->json([
-            'status' => false,
-            'error' => $e->getMessage(),
-            'code' => $statusCode
-        ], $statusCode);
+        try {
+            $evaluators = $this->evaluationService->getRoleById($request->get('id') ?? null);
+
+            return $this->successResponse(
+                $evaluators,
+                ResponseCode::SUCCESS
+            );
+        } catch (\Exception $e) {
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al obtener evaluadores: ' . $e->getMessage()
+            );
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/evaluations/projects",
+     *     tags={"Evaluaciones"},
+     *     summary="Obtener todos los proyectos",
+     *     description="Devuelve una lista de proyectos filtrados por título",
+     *     operationId="getAllProjects",
+     *     @OA\Parameter(
+     *         name="titulo",
+     *         in="query",
+     *         description="Título del proyecto",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Proyectos obtenidos correctamente"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Error en la solicitud"
+     *     )
+     * )
+     */
+    public function getAllProjects(Request $request): JsonResponse
+    {
+        try {
+            $projects = $this->evaluationService->getAllProjects($request->get('titulo') ?? null);
+
+            return $this->successResponse(
+                $projects,
+                ResponseCode::SUCCESS
+            );
+        } catch (\Exception $e) {
+            return $this->errorResponse(
+                ResponseCode::SERVER_ERROR,
+                400,
+                'Error al obtener proyectos: ' . $e->getMessage()
+            );
+        }
     }
 }

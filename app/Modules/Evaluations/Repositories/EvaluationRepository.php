@@ -7,9 +7,34 @@ use Illuminate\Support\Facades\DB;
 
 class EvaluationRepository
 {
-    public function getAllEvaluations()
+    public function getAllEvaluations($page = 1, $perPage = 10, $filters = [])
     {
-        return EvaluationModel::with('project', 'evaluator')->get();
+        $query = EvaluationModel::with(['project', 'evaluator'])
+            ->select('Evaluacion.*');
+
+        // Filtro por título del proyecto
+        if (!empty($filters['project'])) {
+            $query->whereHas('project', function($q) use ($filters) {
+                $q->where('titulo', 'like', '%' . $filters['project'] . '%');
+            });
+        }
+
+        // Filtro por nombre del evaluador
+        if (!empty($filters['evaluator'])) {
+            $query->whereHas('evaluator', function($q) use ($filters) {
+                $q->where('nombre', 'like', '%' . $filters['evaluator'] . '%');
+            });
+        }
+
+        // Filtro por estado
+        if (!empty($filters['status'])) {
+            $query->where('estado', $filters['status']);
+        }
+
+        // Ordenar por ID ascendente (de menor a mayor)
+        $query->orderBy('id', 'asc');
+
+        return $query->paginate($perPage, ['*'], 'page', $page);
     }
 
     public function createEvaluation(array $data)
@@ -210,5 +235,50 @@ class EvaluationRepository
             ->where('pe.evento_id', $eventId)
             ->whereNull('e.id')
             ->pluck('pe.proyecto_id');
+    }
+
+    public function getRoleById($id = null)
+    {
+        $data = DB::table('Usuario')
+            ->join('Usuario_Rol', 'Usuario.id', '=', 'Usuario_Rol.usuario_id')
+            ->join('Rol', 'Usuario_Rol.rol_id', '=', 'Rol.id')
+            ->when($id, function ($query) use ($id) {
+                $query->where('Usuario.id', $id);
+            })
+            ->select('Usuario.id', 'Usuario.nombre', 'Usuario.email', 'Usuario.tipo', 'Usuario_Rol.rol_id', 'Rol.nombre as rol')
+            ->get();
+    
+        if ($data->isEmpty()) {
+            return null;
+        }
+    
+        // Tomar los datos generales del primer registro
+        $user = [
+            'id' => $data[0]->id,
+            'nombre' => $data[0]->nombre,
+            'email' => $data[0]->email,
+            'tipo' => $data[0]->tipo,
+            'roles' => []
+        ];
+    
+        // Agregar todos los roles
+        foreach ($data as $item) {
+            $user['roles'][] = [
+                'rol_id' => $item->rol_id,
+                'rol' => $item->rol
+            ];
+        }
+    
+        return $user;
+    }
+
+    public function getAllProjects($name = null)
+    {
+        return DB::table('Proyecto')
+            ->when($name, function ($query) use ($name) {
+                $query->where('titulo', 'like', '%' . $name . '%');
+            })
+            ->select('id', 'titulo', 'descripcion')
+            ->get();
     }
 }

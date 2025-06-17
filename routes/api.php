@@ -100,9 +100,11 @@ Route::prefix('projects')->group(function () {
     Route::middleware(['auth:api', 'roles:Coordinador de Proyecto,Administrador'])->put('/{id}', [ProjectController::class, 'updateProject'])->name('projects.updateProject');
 });
 
-Route::prefix('evaluations')->group(function () {
+Route::prefix('evaluations')->middleware(['auth:api', 'roles:Evaluador,Coordinador de Semillero'])->group(function () {
     Route::get('/', [EvaluationController::class, 'index']);
     Route::post('/', [EvaluationController::class, 'store']);
+    Route::get('/roles', [EvaluationController::class, 'getRoleById']);
+    Route::get('/projects', [EvaluationController::class, 'getAllProjects']);
     Route::get('/{id}', [EvaluationController::class, 'show']);
     Route::put('/{id}', [EvaluationController::class, 'update']);
     Route::delete('/{id}', [EvaluationController::class, 'destroy']);
@@ -135,7 +137,7 @@ Route::prefix('reports')->middleware(['auth:api', 'roles:Administrador'])->group
     Route::prefix('events')->group(function () {
         Route::get('/{eventId}/report', [ReportController::class, 'getEventReport']);
         Route::get('/{eventId}/activities', [ReportController::class, 'consultarActividades']);
-        Route::get('/enrolled-students', [EventInscriptionController::class, 'getEnrolledStudents']);
+        //Route::get('/enrolled-students', [EventInscriptionController::class, 'getEnrolledStudents']);
     });
 
     Route::prefix('projects')->group(function () {
