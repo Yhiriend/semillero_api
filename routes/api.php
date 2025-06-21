@@ -15,8 +15,10 @@ use App\Modules\Reports\Controllers\ReportController;
 use App\Modules\Seedbeds\Controllers\SeedbedsController;
 use App\Modules\Seedbeds\Controllers\InscriptionController;
 use App\Modules\Reports\Controllers\EvaluatorController;
-use App\Modules\Seedbeds\Controllers\EventInscriptionController;
-
+use App\Modules\Reports\Controllers\EventInscriptionController;
+use App\Modules\Reports\Controllers\ProjectReportController;
+use App\Modules\Reports\Controllers\SeedbedsReportController; 
+use App\Modules\Reports\Controllers\UniversityReportController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -133,24 +135,43 @@ Route::prefix('evaluations')->middleware(['auth:api', 'roles:Evaluador,Coordinad
     Route::get('/event/{eventId}/unevaluated-projects', [EvaluationController::class, 'unevaluatedProjects']);
 });
 
-Route::prefix('reports')->middleware(['auth:api', 'roles:Administrador'])->group(function () {
+Route::prefix('reports')->group(function () {
+    // Certificate routes
     Route::prefix('certificates')->group(function () {
         Route::post('/generate', [ReportController::class, 'generateCertificate']);
         Route::get('/event/{eventId}/generate-all', [ReportController::class, 'generarCertificadosEvento']);
         Route::get('/project/{projectId}/event/{eventId}', [ReportController::class, 'show']);
     });
 
+    // Seedbeds routes
+    Route::prefix('seedbeds')->group(function () {
+        Route::get('/', [SeedbedsReportController::class, 'getAllSeedbeds']);
+        Route::get('/structure', [SeedbedsReportController::class, 'index']);
+        Route::get('/{seedbedId}/users', [SeedbedsReportController::class, 'getUsersBySeedbed']);
+    });
+
+    // Projects routes
+    Route::prefix('projects')->group(function () {
+        Route::get('/', [ProjectReportController::class, 'getAllProjects']);
+        Route::get('/scores', [ReportController::class, 'getProjectScores']);
+        Route::get('/by-seedbed', [ReportController::class, 'getProjectsBySemillero']);
+        Route::get('/with-authors', [ReportController::class, 'getProjectsWithAuthors']);
+    });
+
+     // Universities routes
+    Route::prefix('universities')->group(function () {
+        Route::get('/', [UniversityReportController   ::class, 'index']);
+    });
+
+    // Events routes
     Route::prefix('events')->group(function () {
         Route::get('/{eventId}/report', [ReportController::class, 'getEventReport']);
         Route::get('/{eventId}/activities', [ReportController::class, 'consultarActividades']);
-        //Route::get('/enrolled-students', [EventInscriptionController::class, 'getEnrolledStudents']);
+        Route::get('/activities', [ReportController::class, 'consultarActividades']);
+        Route::get('/enrolled-students', [EventInscriptionController::class, 'getEnrolledStudents']);
     });
 
-    Route::prefix('projects')->group(function () {
-        Route::get('/with-authors', [ReportController::class, 'getProjectsWithAuthors']);
-        Route::get('/scores', [ReportController::class, 'getProjectScores']);
-    });
-
+    // Evaluators routes
     Route::prefix('evaluators')->group(function () {
         Route::get('/with-projects', [EvaluatorController::class, 'index']);
     });

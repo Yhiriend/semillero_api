@@ -3,6 +3,7 @@
 namespace App\Modules\Reports\Services;
 
 use App\Modules\Reports\Models\Eventos;
+use App\Modules\Reports\Models\EventReportModel;
 use App\Traits\ApiResponse;
 
 class EventService
@@ -13,10 +14,10 @@ class EventService
     public function __construct(
     ) {}
 
-public function getRegisteredUsers(int $eventId)
+public function getEnrolledStudents(int $eventId)
     {
         try {
-            $event = Eventos::findOrFail($eventId);
+            $event = EventReportModel::findOrFail($eventId);
             $users = $event->registeredUsers()->get();
 
             $groupedData = $users->groupBy('semillero_id')->map(function ($group) {

@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 use App\Modules\Users\Models\UserModel;
 use App\Modules\Reports\Models\SeedbedModel;
 use App\Modules\Reports\Models\SeedbedUserModel;
-use App\Modules\Projects\Models\ProjectModel;
+use App\Modules\Reports\Models\ProjectReportModel;
 use App\Modules\Events\Models\EventModel;
 use App\Modules\Reports\Models\CertificateModel;
 use App\Modules\Evaluations\Models\EvaluationModel;
@@ -51,7 +51,7 @@ class CertificateService
             }
     
             // Obtener proyecto relacionado al semillero
-            $proyecto = ProjectModel::where('semillero_id', $semillero->id)->first();
+            $proyecto = ProjectReportModel::where('semillero_id', $semillero->id)->first();
             if (!$proyecto) {
                 throw new \Exception('No hay proyecto asociado al semillero.');
             }

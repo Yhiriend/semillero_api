@@ -4,10 +4,12 @@ namespace App\Modules\Reports\Controllers;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
+use App\Enums\ResponseCode;
+
 
 
 use App\Http\Controllers\Controller;
-use App\Modules\Projects\Models\ProjectModel;
+use App\Modules\Reports\Models\ProjectReportModel;
 use App\Modules\Reports\Services\CertificateService;
 use App\Modules\Reports\Services\EventService;
 use App\Traits\ApiResponse;
@@ -70,20 +72,61 @@ class ReportController extends Controller
      *     )
      * )
      */
-    public function getProjectsWithAuthors(): JsonResponse
+    public function getProjectsWithAuthors(Request $request): JsonResponse
     {
         try {
-            $projects = ProjectModel::with([
+            // Obtener parámetros de paginación
+            $perPage = $request->query('per_page', 10); // por defecto 10
+            $page = $request->query('page', 1); // por defecto 1
+    
+            // Obtener proyectos con relaciones y paginar
+            $projects = ProjectReportModel::with([
                 'autores:id,nombre,email,tipo',
                 'lider:id,nombre,email,tipo',
                 'coordinador:id,nombre,email,tipo'
-            ])->get();
-
-            return $this->successResponse($projects, 'Lista de proyectos con sus autores obtenida exitosamente');
+            ])->paginate($perPage, ['*'], 'page', $page);
+    
+            return $this->successResponse([
+                'mensaje' => 'Lista de proyectos con sus autores obtenida exitosamente',
+                'proyectos' => $projects
+            ], ResponseCode::SUCCESS, 200);
         } catch (\Exception $e) {
             return $this->errorResponse('Error al obtener los proyectos: ' . $e->getMessage(), 500);
         }
     }
+
+    public function getProjectsBySemillero(Request $request): JsonResponse
+    {
+        try {
+            // Obtener parámetros de filtro y paginación desde el request
+            $semilleroId = $request->query('semillero_id'); // opcional
+            $perPage = $request->query('per_page', 10); // valor por defecto: 10
+            $page = $request->query('page', 1); // valor por defecto: 1
+
+            // Construir la consulta base
+            $query = ProjectReportModel::with([
+                'autores:id,nombre,email,tipo',
+                'lider:id,nombre,email,tipo',
+                'coordinador:id,nombre,email,tipo'
+            ]);
+
+            // Si se envía un semillero_id, aplicar el filtro
+            if ($semilleroId) {
+                $query->where('semillero_id', $semilleroId);
+            }
+
+            // Obtener proyectos paginados
+            $projects = $query->paginate($perPage, ['*'], 'page', $page);
+
+            return $this->successResponse([
+                'mensaje' => 'Lista de proyectos filtrada y paginada',
+                'proyectos' => $projects
+            ], ResponseCode::SUCCESS, 200);
+        } catch (\Exception $e) {
+            return $this->errorResponse('Error al obtener los proyectos: ' . $e->getMessage(), 500);
+        }
+    }
+    
 
     /**
      * Generate a participation certificate
@@ -126,16 +169,19 @@ class ReportController extends Controller
                 'expedida'  => 'required|string',
                 'semillero' => 'required|integer|exists:Semillero,id',
             ]);
-        
+    
             $pdf = $this->certificateService->generateParticipationCertificate($validated);
-        
+    
             return response()->download($pdf, 'certificado-participacion.pdf');
+    
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e->errors());
+    
         } catch (ModelNotFoundException $e) {
-            return $this->errorResponse('Usuario o semillero no encontrado', 404);
+            return $this->errorResponse(ResponseCode::NOT_FOUND, null, 404);
+    
         } catch (\Exception $e) {
-            return $this->errorResponse('Error al generar el certificado: ' . $e->getMessage(), 500);
+            return $this->errorResponse(ResponseCode::INTERNAL_ERROR, $e->getMessage(), 500);
         }
     }
     
@@ -171,22 +217,25 @@ class ReportController extends Controller
      * )
      */
     public function getEventReport(Request $request, int $eventoId): JsonResponse
-    {
-        try {
-            $report = $this->certificateService->getEventReport($eventoId);
+{
+    try {
+        $report = $this->certificateService->getEventReport($eventoId);
 
-            if (empty($report)) {
-                return $this->errorResponse('No se encontraron actividades para este evento', 404);
-            }
-
-            return $this->successResponse($report, 'Reporte del evento generado exitosamente');
-        } catch (ModelNotFoundException $e) {
-            return $this->errorResponse('Evento no encontrado', 404);
-        } catch (\Exception $e) {
-            return $this->errorResponse('Error al generar el reporte: ' . $e->getMessage(), 500);
+        if (empty($report)) {
+            return $this->errorResponse(ResponseCode::NOT_FOUND, 404, 'No se encontraron actividades para este evento');
         }
-    }
 
+        return $this->successResponse([
+            'mensaje' => 'Reporte del evento generado exitosamente',
+            'reporte' => $report
+        ], ResponseCode::SUCCESS, 200);
+
+    } catch (ModelNotFoundException $e) {
+        return $this->errorResponse(ResponseCode::NOT_FOUND, 404, 'Evento no encontrado');
+    } catch (\Exception $e) {
+        return $this->errorResponse(ResponseCode::ERROR, 500, 'Error al generar el reporte: ' . $e->getMessage());
+    }
+}
     /**
      * Get project scores
      * 
@@ -222,14 +271,18 @@ class ReportController extends Controller
     {
         try {
             $scores = $this->certificateService->getProjectScores();
-
+    
             if (empty($scores)) {
-                return $this->errorResponse('No se encontraron evaluaciones completadas.', 404);
+                return $this->errorResponse(ResponseCode::NOT_FOUND, 404, 'No se encontraron evaluaciones completadas.');
             }
-
-            return $this->successResponse($scores, 'Calificaciones de proyectos obtenidas exitosamente');
+    
+            return $this->successResponse([
+                'mensaje' => 'Calificaciones de proyectos obtenidas exitosamente',
+                'calificaciones' => $scores
+            ], ResponseCode::SUCCESS, 200);
+            
         } catch (\Exception $e) {
-            return $this->errorResponse('Error al obtener calificaciones: ' . $e->getMessage(), 500);
+            return $this->errorResponse(ResponseCode::ERROR, 500, 'Error al obtener calificaciones: ' . $e->getMessage());
         }
     }
 
@@ -277,58 +330,61 @@ class ReportController extends Controller
      *     )
      * )
      */
-    public function generarCertificadosEvento($eventoId): JsonResponse
-    {
-        try {
-            $evento = DB::table('Evento')->where('id', $eventoId)->first();
 
-            if (!$evento) {
-                return $this->errorResponse('Evento no encontrado', 404);
-            }
-
-            $semillero = DB::table('Semillero')
-                ->where('coordinador_id', $evento->coordinador_id)
-                ->first();
-
-            if (!$semillero) {
-                return $this->errorResponse('No se encontró semillero asociado al coordinador del evento', 404);
-            }
-
-            $participantes = DB::table('Semillero_usuario as su')
-                ->join('Usuario as u', 'su.usuario_id', '=', 'u.id')
-                ->select(
-                    'u.id as usuario_id',
-                    DB::raw("CONCAT(u.nombre) as nombre_participante"),
-                    'u.email as correo',
-                    'su.fecha_inscripcion'
-                )
-                ->where('su.semillero_id', $semillero->id)
-                ->get();
-
-            $certificados = $participantes->map(function ($p) use ($evento, $semillero) {
-                return [
-                    'nombre_participante' => $p->nombre_participante,
-                    'correo'              => $p->correo,
-                    'nombre_evento'       => $evento->nombre,
-                    'fecha_inicio_evento' => $evento->fecha_inicio,
-                    'fecha_fin_evento'    => $evento->fecha_fin,
-                    'ubicacion_evento'    => $evento->ubicacion,
-                    'semillero'           => $semillero->nombre,
-                    'fecha_inscripcion'   => $p->fecha_inscripcion,
-                ];
-            });
-
-            return $this->successResponse([
-                'evento'       => $evento->nombre,
-                'semillero'    => $semillero->nombre,
-                'total'        => $certificados->count(),
-                'certificados' => $certificados,
-            ], 'Certificados generados exitosamente');
-        } catch (\Exception $e) {
-            return $this->errorResponse('Error al generar los certificados: ' . $e->getMessage(), 500);
-        }
-    }
-
+     public function generarCertificadosEvento($eventoId): JsonResponse
+     {
+         try {
+             $evento = DB::table('Evento')->where('id', $eventoId)->first();
+     
+             if (!$evento) {
+                 return $this->errorResponse(ResponseCode::NOT_FOUND, 404, 'Evento no encontrado');
+             }
+     
+             $semillero = DB::table('Semillero')
+                 ->where('coordinador_id', $evento->coordinador_id)
+                 ->first();
+     
+             if (!$semillero) {
+                 return $this->errorResponse(ResponseCode::NOT_FOUND, 404, 'No se encontró semillero asociado al coordinador del evento');
+             }
+     
+             $participantes = DB::table('Semillero_usuario as su')
+                 ->join('Usuario as u', 'su.usuario_id', '=', 'u.id')
+                 ->select(
+                     'u.id as usuario_id',
+                     DB::raw("CONCAT(u.nombre) as nombre_participante"),
+                     'u.email as correo',
+                     'su.fecha_inscripcion'
+                 )
+                 ->where('su.semillero_id', $semillero->id)
+                 ->get();
+     
+             $certificados = $participantes->map(function ($p) use ($evento, $semillero) {
+                 return [
+                     'nombre_participante' => $p->nombre_participante,
+                     'correo'              => $p->correo,
+                     'nombre_evento'       => $evento->nombre,
+                     'fecha_inicio_evento' => $evento->fecha_inicio,
+                     'fecha_fin_evento'    => $evento->fecha_fin,
+                     'ubicacion_evento'    => $evento->ubicacion,
+                     'semillero'           => $semillero->nombre,
+                     'fecha_inscripcion'   => $p->fecha_inscripcion,
+                 ];
+             });
+     
+             return $this->successResponse([
+                 'mensaje'      => 'Certificados generados exitosamente',
+                 'evento'       => $evento->nombre,
+                 'semillero'    => $semillero->nombre,
+                 'total'        => $certificados->count(),
+                 'certificados' => $certificados,
+             ], ResponseCode::SUCCESS, 200);
+     
+         } catch (\Exception $e) {
+             return $this->errorResponse(ResponseCode::ERROR, 500, 'Error al generar los certificados: ' . $e->getMessage());
+         }
+     }
+    
     /**
      * Get all activities
      * 
@@ -366,40 +422,41 @@ class ReportController extends Controller
      *         )
      *     )
      * )
-     */
-    public function consultarActividades(): JsonResponse
-    {
-        try {
-            $actividades = DB::table('Actividad as a')
-                ->leftJoin('Actividad_Responsable as ar', 'a.id', '=', 'ar.actividad_id')
-                ->leftJoin('Usuario as u', 'ar.responsable_id', '=', 'u.id')
-                ->select(
-                    'a.id as actividad_id',
-                    'a.titulo as actividad_titulo',
-                    'a.descripcion',
-                    'a.fecha_inicio',
-                    'a.fecha_fin',
-                    'a.estado',
-                    'a.fecha_creacion',
-                    'a.fecha_actualizacion',
-                    'a.semillero_id',
-                    'a.proyecto_id',
-                    'a.evento_id',
-                    'u.id as responsable_id',
-                    DB::raw("CONCAT(u.nombre) as responsable_nombre"),
-                    'u.email as responsable_correo'
-                )
-                ->orderBy('a.fecha_inicio', 'desc')
-                ->get();
+     */public function consultarActividades(): JsonResponse
+{
+    try {
+        $actividades = DB::table('Actividad as a')
+            ->leftJoin('Actividad_Responsable as ar', 'a.id', '=', 'ar.actividad_id')
+            ->leftJoin('Usuario as u', 'ar.responsable_id', '=', 'u.id')
+            ->select(
+                'a.id as actividad_id',
+                'a.titulo as actividad_titulo',
+                'a.descripcion',
+                'a.fecha_inicio',
+                'a.fecha_fin',
+                'a.estado',
+                'a.fecha_creacion',
+                'a.fecha_actualizacion',
+                'a.semillero_id',
+                'a.proyecto_id',
+                'a.evento_id',
+                'u.id as responsable_id',
+                DB::raw("CONCAT(u.nombre) as responsable_nombre"),
+                'u.email as responsable_correo'
+            )
+            ->orderBy('a.fecha_inicio', 'desc')
+            ->get();
 
-            return $this->successResponse([
-                'total' => $actividades->count(),
-                'actividades' => $actividades
-            ], 'Actividades obtenidas exitosamente');
-        } catch (\Exception $e) {
-            return $this->errorResponse('Error al consultar las actividades: ' . $e->getMessage(), 500);
-        }
+        return $this->successResponse([
+            'mensaje'     => 'Actividades obtenidas exitosamente',
+            'total'       => $actividades->count(),
+            'actividades' => $actividades
+        ], ResponseCode::SUCCESS, 200);
+
+    } catch (\Exception $e) {
+        return $this->errorResponse(ResponseCode::ERROR, 500, 'Error al consultar las actividades: ' . $e->getMessage());
     }
+}
 
     /**
      * Get certificate details for a specific project in an event
@@ -451,25 +508,33 @@ class ReportController extends Controller
     {
         try {
             $certificado = $this->certificateService->generarCertificado($proyectoId, $eventoId);
-
+    
             if (!$certificado) {
-                return $this->errorResponse('No hay evaluaciones completadas para este proyecto en el evento.', 404);
+                return $this->errorResponse(ResponseCode::NOT_FOUND, 404, 'No hay evaluaciones completadas para este proyecto en el evento');
             }
-
-            return $this->successResponse([
-                'proyecto' => $certificado->project->titulo,
-                'evento' => $certificado->event->nombre,
-                'promedio_puntuacion' => $certificado->averageScore,
-                'evaluaciones' => array_map(fn($eval) => [
+    
+            $evaluaciones = collect($certificado->evaluations)->map(function ($eval) {
+                return [
                     'evaluador_id' => $eval->evaluador_id,
-                    'puntuacion' => $eval->puntuacion,
-                    'comentarios' => $eval->comentarios,
-                ], $certificado->evaluations),
-            ], 'Detalles del certificado obtenidos exitosamente');
+                    'puntuacion'   => $eval->puntuacion,
+                    'comentarios'  => $eval->comentarios,
+                ];
+            });
+    
+            return $this->successResponse([
+                'mensaje'             => 'Certificado generado exitosamente',
+                'evento'              => $certificado->event->nombre,
+                'proyecto'            => $certificado->project->titulo,
+                'promedio_puntuacion' => $certificado->averageScore,
+                'total'               => $evaluaciones->count(),
+                'evaluaciones'        => $evaluaciones,
+            ], ResponseCode::SUCCESS, 200);
+    
         } catch (ModelNotFoundException $e) {
-            return $this->errorResponse('Proyecto o evento no encontrado', 404);
+            return $this->errorResponse(ResponseCode::NOT_FOUND, 404, 'Proyecto o evento no encontrado');
         } catch (\Exception $e) {
-            return $this->errorResponse('Error al obtener los detalles del certificado: ' . $e->getMessage(), 500);
+            return $this->errorResponse(ResponseCode::ERROR, 500, 'Error al generar el certificado: ' . $e->getMessage());
         }
     }
+    
 }

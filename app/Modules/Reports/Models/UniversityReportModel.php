@@ -3,7 +3,7 @@
 namespace App\Modules\Reports\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Modules\Faculties\Models\FacultyModel;
+use App\Modules\Reports\Models\FacultyReportModel;
 
 class UniversityReportModel extends Model
 {
@@ -11,6 +11,6 @@ class UniversityReportModel extends Model
 
     public function faculties()
     {
-        return $this->hasMany(FacultyModel::class);
+        return $this->hasMany(FacultyReportModel::class, 'universidad_id', 'id');
     }
 } 

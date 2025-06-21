@@ -7,13 +7,13 @@ use Illuminate\Support\Facades\Response;
 
 
 use App\Http\Controllers\Controller;
-use App\Modules\Reports\Models\Proyecto;
+use App\Modules\Reports\Models\ProjectReportModel;
 use App\Modules\Reports\Services\EventService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class EventosController extends Controller
+class EventReportController extends Controller
 {
     use ApiResponse;
 
@@ -31,7 +31,7 @@ class EventosController extends Controller
      */
     public function getProjectsWithAuthors(): JsonResponse
     {
-        $projects = Proyecto::with([
+        $projects = ProjectReportModel::with([
             'autores:id,nombre,email,tipo',
             'lider:id,nombre,email,tipo',
             'coordinador:id,nombre,email,tipo'

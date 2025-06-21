@@ -5,6 +5,7 @@ namespace App\Modules\Reports\Controllers;
 use App\Modules\Reports\Services\EvaluatorService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
+use App\Enums\ResponseCode;
 
 class EvaluatorController
 {
@@ -22,10 +23,16 @@ class EvaluatorController
      *
      * @return JsonResponse
      */
+
+
     public function index(): JsonResponse
     {
         $evaluators = $this->evaluatorService->getEvaluatorsWithProjects();
-        
-        return $this->successResponse($evaluators, 'Evaluadores obtenidos exitosamente');
+    
+        return $this->successResponse([
+            'mensaje'     => 'Evaluadores obtenidos exitosamente',
+            'evaluadores' => $evaluators,
+        ], ResponseCode::SUCCESS, 200);
     }
+    
 } 

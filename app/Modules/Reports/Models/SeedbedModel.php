@@ -23,11 +23,12 @@ class SeedbedModel extends Model
         'fecha_creacion',
         'fecha_actualizacion'
     ];
+    
 
     public function users()
     {
         return $this->belongsToMany(UserModel::class, 'Semillero_Usuario', 'semillero_id', 'usuario_id')
-                    ->withTimestamps();
+                    ->withPivot('fecha_inscripcion');
     }
 
     public function projects()
