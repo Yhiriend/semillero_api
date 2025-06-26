@@ -135,7 +135,7 @@ Route::prefix('evaluations')->middleware(['auth:api', 'roles:Evaluador,Coordinad
     Route::get('/event/{eventId}/unevaluated-projects', [EvaluationController::class, 'unevaluatedProjects']);
 });
 
-Route::prefix('reports')->group(function () {
+Route::prefix('reports')->middleware(['auth:api', 'roles:Administrador'])->group(function () {
     // Certificate routes
     Route::prefix('certificates')->group(function () {
         Route::post('/generate', [ReportController::class, 'generateCertificate']);
